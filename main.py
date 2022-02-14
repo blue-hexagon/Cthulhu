@@ -1,106 +1,63 @@
-import http.client
-import string
-import threading
-from enum import Enum
-from typing import Tuple
+import itertools
+from typing import List
 
-import numpy as np
+import password_generator
+from password_generator import CharacterClass, PasswordPermuter
 
 
-class AuthMethod(Enum):
-    SIMPLE_FORM_METHOD = 0
-    COMPLEX_FORM_AUTH = 1
-    BASIC_HTTP_OR_NTLM_AUTH = 2
-    MFA_OR_CAPTCHA_AUTH = 3
+class ShallowProductOriginator:
+    @staticmethod
+    def get_shallow_product(data) -> List:
+        list_counting = []
+        nest_holder = list()
 
+        for counter in range(len(data)):
+            if isinstance(data[counter], list):
+                list_counting.append(len(data[counter]))
+                nest_holder.append(data[counter].copy())
+            elif isinstance(data[counter], str):
+                list_counting.append(1)
+                nest_holder.append(data[counter])
 
-class WebAuthBruteforcer:
-    def __init__(
-        self,
-        endpoint: str,
-        target_host: str,
-        target_port: int,
-        username: Tuple[str | None, str | None] = None,
-        email: Tuple[str | None, str | None] = None,
-        password: Tuple[str | None, str | None] = None,
-        auth_method: Enum = None,
-    ):
-        self.endpoint = endpoint
-        self.target_host = target_host
-        self.target_port = target_port
-        self.username_name = username[0]
-        self.username_val = username[1]
-        self.email_name = email[0]
-        self.email_val = email[1]
-        self.password_name = password[0]
-        self.password_val = password[1]
-        self.perms_array = list(set(string.printable))
-        self.auth_method = auth_method
-        # MAX_THREADS = 100
+            else:
+                raise ValueError(
+                    f"You must quote any list-item in the word list you pass to the {password_generator.PasswordPermuter}")
 
-        """ This determines the max amount of threads that the bruteforcer will run """
-        if len(self.perms_array) > 100:
-            self.perms_array = np.array_split(self.perms_array, 100)
-        else:
-            """Fallback for testing the program with single characters"""
-            self.perms_array = np.array_split(self.perms_array, len(self.perms_array))
-
-    def deploy_bruteforcer_threads(self) -> None:
-        for perm_subset in self.perms_array:
-            thread = threading.Thread(target=self.bruteforcer, args=[perm_subset])
-            thread.start()
-
-    def bruteforcer(self, perm_subset) -> None:
-        for perm in perm_subset:
-            # if b"auth_token" in data:
-            # print("Found Token -> " + data.decode("utf-8"))
-            # return
-            ...
-
-    def testing(self) -> None:
-        match self.auth_method:  # type: ignore
-            case AuthMethod.SIMPLE_FORM_METHOD:
-                self.simple_form_auth()
-            case _:
-                raise KeyError("Didn't recognize auth method.")
-
-    def simple_form_auth(self):
-        conn = http.client.HTTPSConnection(self.target_host)
-        if self.username_val:
-            payload = f"{self.username_name}={self.username_val}&{self.password_name}={self.password_val}"
-        elif self.email_val:
-            payload = f"{self.email_name}={self.email_val}&{self.password_name}={self.password_val}"
-        else:
-            raise KeyError("Missing email or username.")
-        headers = {
-            "Cache-Control": "no-cache",
-            "Host": f"{self.target_host}",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Content-Length": len(payload),
-        }
-        conn.request(method="POST", url=f"{self.endpoint}", body=payload, headers=headers)
-        res = conn.getresponse()
-        data = res.read().decode()
-        print(res.msg, res.version, res.status, res.reason, data)
-        conn.close()
+        product = list(itertools.product(*nest_holder))
+        print(*product, sep="\n")
+        return product
 
 
 if __name__ == "__main__":
-    # bruteforcer = RestAuthPasswordBruteforcer(
-    #     endpoint="/auth/token/login/",
-    #     target_ip="127.0.0.1",
-    #     target_port=8000,
-    #     username="dj",
+    # PasswordPermuter(1, 3, "lower_hexdigits__1_3.txt").run_filewriter(
+    #     [
+    #         CharacterClass.ASCII_LOWERCASE,
+    #         CharacterClass.DIGITS,
+    #     ]
     # )
-    # bruteforcer.deploy_bruteforcer_threads()
-    form_model = {"username": None, "email": "simpleForm@authenticationtest.com", "password": "pa$$w0rd"}
-    bruteforcer = WebAuthBruteforcer(
-        target_host="authenticationtest.com",
-        endpoint="/login/?mode=simpleFormAuth",
-        target_port=443,
-        auth_method=AuthMethod.SIMPLE_FORM_METHOD,
-        username=("username", None),
-        email=("email", "simpleForm@authenticationtest.com"),
-        password=("password", "pa$$w0rd"),
-    )
-    bruteforcer.testing()
+    #
+    # PasswordPermuter(4, 4, "hexdigits__4_4.txt").run_filewriter(["abcdefABCDEF0123456789"])
+    dat = [  # TODO: Replace with `data` param, when program is finished.
+        ["123", ],
+        [" ", ],
+        ["!", "!1", "*"],
+        ["Password", "password", "pa$$word", "Pa$$word", "p@$$w0rd"],
+        ["admin", "Admin", "@dmin", "adm1n"],
+    ]
+    prods = ShallowProductOriginator.get_shallow_product(dat)
+    print(prods)
+    # PasswordPermuter(2,5,"hahah.txt").run_filewriter(prods)
+    # x = PasswordPermuter(1, 3).return_generator(
+    #     [
+    #         "123",
+    #         "!",
+    #         ["Password", "password", "pa$$word", "Pa$$word", "p@$$w0rd"],
+    #         ["admin", "Admin"],
+    #     ]
+    # )
+
+    # while input("Press any key to continue, <exit> to exit.") != "exit":
+    #     try:
+    #         print(next(x))
+    #     except StopIteration("Generator exhausted"):
+    #         sys.exit(0)

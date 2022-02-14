@@ -1,6 +1,6 @@
 import sys
 from itertools import permutations
-from typing import List, Set, Tuple
+from typing import Generator, List, Set, Tuple
 
 
 class CharacterClass:
@@ -20,36 +20,25 @@ class CharacterClass:
     ASCII_UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     ASCII_LETTERS = ASCII_LOWERCASE + ASCII_UPPERCASE
     DIGITS = "0123456789"
+    HEXDIGITS_LOWER = DIGITS + "abcdef"
+    HEXDIGITS_UPPER = DIGITS + "ABCDEF"
     HEXDIGITS = DIGITS + "abcdef" + "ABCDEF"
     OCTDIGITS = "01234567"
     PUNCTUATION = r"""!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"""
     PRINTABLE = DIGITS + ASCII_LETTERS + PUNCTUATION + WHITESPACE
 
 
-class PasswordGenerator:
-    def __init__(self, min_len: int, max_len: int, /, filename: str):
+class PasswordPermuter:
+    def __init__(self, min_len: int, max_len: int, /, filename: str = None, bruteforce: bool = False) -> None:
         if min_len > max_len:
             raise ValueError("Min length cannot be greater than max length.")
-        if not filename:
-            raise ValueError("You must provide a filename")
+        self._bruteforce = bruteforce
         self._min_len = min_len
         self._max_len = max_len
-        self._filename = filename
+        if filename:
+            self._filename = filename
 
-    def wordlist_permutator(self, word_list: Tuple[str, ...] | List[str]):
-        if len(word_list) <= 1:
-            sys.exit("You must choose add least two words for the permutator.")
-        self._write_passwords(word_list)
-
-    def character_permutator(self, characters: Set | List):
-        character_set = set()
-        for character_sequence in characters:
-            character_set |= set(character_sequence)
-        if len(characters) == 0:
-            sys.exit("You must choose add least one CharacterClass for the permutator.")
-        self._write_passwords(character_set)
-
-    def _write_passwords(self, collection):
+    def _write_passwords(self, collection) -> None:
         with open(self._filename, "w") as file_out:
             for password_length in range(self._min_len, self._max_len + 1):
                 perms = list(permutations(collection, password_length))
@@ -58,18 +47,60 @@ class PasswordGenerator:
                         file_out.write(string)
                     file_out.write("\n")
 
-    def _generate_passwords(self, collection):
+    def _yield_passwords(self, collection):  # TODO: Type hint
         for password_length in range(self._min_len, self._max_len + 1):
             perms = list(permutations(collection, password_length))
             for perm in perms:
-                yield perm
+                yield "".join(perm)
 
+    def _parse_inputdata(self, input_data: Tuple | List) -> Set:
+        if isinstance(input_data, list):
+            if len(input_data) == 0:
+                sys.exit("You must choose add least one CharacterClass for the permutator.")
+            return self._convert_list_to_set(input_data)
 
-if __name__ == "__main__":
-    # PasswordGenerator(1, 3, "digit_lower__1_3.txt").character_permutator(
-    #     [CharacterClass.ASCII_LOWERCASE, CharacterClass.DIGITS])
-    # PasswordGenerator(6, 6, "hexdigits__4_12.txt").wordlist_permutator(["abcdefABCDEF0123456789"])
-    # PasswordGenerator(1, 3, "word-combo1.txt").wordlist_permutator(["123", "!"])
-    x = PasswordGenerator(1, 4, "dsad")._generate_passwords(("!", "123"))
-    for i in range(0, 100):
-        print(x.__next__())
+        elif isinstance(input_data, tuple):
+            if len(input_data) <= 1:
+                sys.exit("You must choose add least two words for the permutator.")
+            return self._handle_tuples(input_data)
+        else:
+            raise ValueError("For character-level permutations use List[str,str,...]. For word-level permutations use Tuple[str,str,...]")
+
+    @staticmethod
+    def _convert_list_to_set(input_data) -> Set:
+        character_set = set()
+        for character_sequence in input_data:
+            character_set |= set(character_sequence)
+        return character_set
+
+    @staticmethod
+    def _handle_tuples(input_data) -> ...:
+        from itertools import combinations
+
+        coll = []
+        for data in input_data:
+            if isinstance(data, tuple):
+                print("data", data)
+                for dat in data:
+                    print("dat: " + str(dat))
+            else:
+                coll.append(data)
+                print("data: " + str(data))
+        comb = combinations(["123", "!", ("admin", "Admin"), ("password", "Password")], 3)
+
+        # Print the obtained combinations
+        for i in list(comb):
+            print(i)
+        sys.exit(0)
+
+    def run_filewriter(self, input_data: Tuple | List) -> None:
+        try:
+            hasattr(self, self._filename)
+        except AttributeError:
+            print("<PasswordPermuter> needs a filename attribute in it's signature when using the filewriter() method.")
+        input_data = self._parse_inputdata(input_data)
+        self._write_passwords(input_data)
+
+    def return_generator(self, input_data: Tuple | List) -> Generator:
+        input_data = self._parse_inputdata(input_data)
+        return self._yield_passwords(input_data)
