@@ -57,13 +57,6 @@ class WebAuthBruteforcer:
             # return
             ...
 
-    def testing(self) -> None:
-        match self.auth_method:  # type: ignore
-            case AuthMethod.SIMPLE_FORM_METHOD:
-                self.simple_form_auth()
-            case _:
-                raise KeyError("Didn't recognize auth method.")
-
     def simple_form_auth(self):
         conn = http.client.HTTPSConnection(self.target_host)
         if self.username_val:
@@ -84,6 +77,19 @@ class WebAuthBruteforcer:
         print(res.msg, res.version, res.status, res.reason, data)
         conn.close()
 
+    def run(self) -> None:
+        match self.auth_method:  # mypy: ignore
+            case AuthMethod.SIMPLE_FORM_METHOD:
+                self.simple_form_auth()
+            case AuthMethod.COMPLEX_FORM_AUTH:
+                raise NotImplementedError("Todo")
+            case AuthMethod.MFA_OR_CAPTCHA_AUTH:
+                raise NotImplementedError("Todo")
+            case AuthMethod.BASIC_HTTP_OR_NTLM_AUTH:
+                raise NotImplementedError("Todo")
+            case _:
+                raise KeyError("Authentication method not recognized.")
+
 
 if __name__ == "__main__":
     # bruteforcer = RestAuthPasswordBruteforcer(
@@ -103,4 +109,4 @@ if __name__ == "__main__":
         email=("email", "simpleForm@authenticationtest.com"),
         password=("password", "pa$$w0rd"),
     )
-    bruteforcer.testing()
+    bruteforcer.run()
