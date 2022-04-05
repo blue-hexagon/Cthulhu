@@ -4,7 +4,7 @@ import filewriter_config
 from password_permuter import PasswordPermuter
 
 # def test_my_function(benchmark):
-#     result = benchmark(test)
+#     result = benchmark(test_bruteforce_filewriter())
 
 
 def test_bruteforce_filewriter():
@@ -18,10 +18,10 @@ def test_bruteforce_generator():
 
 
 def test_dictionary_filewriter():
-    PasswordPermuter(4, 4, "dict_001.txt").use_filewriter(
+    PasswordPermuter(filename="dict_001.txt").use_filewriter(
         (
             ["123"],
-            [" "],
+            ["-"],
             ["!", "!1", "*"],
             ["Password", "password", "pa$$word", "Pa$$word", "p@$$w0rd"],
             ["admin", "Admin", "@dmin", "adm1n"],
@@ -30,11 +30,12 @@ def test_dictionary_filewriter():
     assert pathlib.Path(filewriter_config.config["OUTPUT_DIR"] + "dict_001.txt").resolve().is_file()
 
 
+
 def test_dictionary_generator():
     pw_permuter = PasswordPermuter().use_generator(
         (
             ["123"],
-            [" "],
+            ["-"],
             ["!", "!1", "*"],
             ["Password", "password", "pa$$word", "Pa$$word", "p@$$w0rd"],
             ["admin", "Admin", "@dmin", "adm1n"],

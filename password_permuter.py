@@ -120,11 +120,8 @@ if __name__ == "__main__":
     )
 
     PasswordPermuter(4, 4, "hexdigits__4_4.txt").use_filewriter(["abcdefABCDEF0123456789"])
-    dat = ()  # TODO: Replace with `data` param, when program is finished.
-    prods = PasswordPermuter._get_shallow_product(dat)
-    print(prods)
-    PasswordPermuter(2, 5, "hahah.txt").use_filewriter(prods)
-    # x = BruteforcePermuter(5, 5).return_generator(
+
+    # x = PasswordPermuter(5, 5).return_generator(
     #     [
     #         ["123"],
     #         [" "],
