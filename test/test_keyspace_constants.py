@@ -1,10 +1,10 @@
 import re
 
-from password_permuter import CharacterClass
+from src.bruteforce_generator import CharacterClass
 
 
 def test_keyspace_constants():
-    """Tests the keyspace constants"""
+    """Tests the character-class constants"""
     assert CharacterClass.WHITESPACE.isspace()
     assert CharacterClass.ASCII_LOWERCASE.islower()
     assert CharacterClass.ASCII_UPPERCASE.isupper()
@@ -14,5 +14,5 @@ def test_keyspace_constants():
     assert bool(re.match(r"([^0-9A-F]+)", CharacterClass.HEXDIGITS_UPPER)) is False
     assert bool(re.match(r"([^0-9a-fA-F]+)", CharacterClass.HEXDIGITS)) is False
     assert bool(re.match(r"([^0-7]+)", CharacterClass.OCTDIGITS)) is False
-    assert bool(re.match(r"[0-9a-zA-Z]+", CharacterClass.PUNCTUATION)) is False
+    assert bool(re.match(r"([0-9a-zA-Z])+", CharacterClass.PUNCTUATION)) is False
     assert bool(re.match(r"([\W]+)", CharacterClass.PRINTABLE)) is False

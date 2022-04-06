@@ -1,26 +1,11 @@
-from password_permuter import PasswordPermuter, CharacterClass
+from src.bruteforce_generator import BruteforcePWGenerator, CharacterClass
 
 if __name__ == "__main__":
-    PasswordPermuter(1, 3, "ascii_lower_and_octdigit__1_3.txt").use_filewriter(
-        [
-            CharacterClass.ASCII_LOWERCASE,
-            CharacterClass.OCTDIGITS,
-        ]
-    )
+    BruteforcePWGenerator(4, 4, filename="hello.txt").use_filewriter([CharacterClass.OCTDIGITS, CharacterClass.ASCII_LOWERCASE])
+    bruteforce_map = BruteforcePWGenerator(3, 3, filename="test.txt").use_generator(["abc"])
 
-    PasswordPermuter(4, 4, "hexdigits__4_4.txt").use_filewriter(["abcdefABCDEF0123456789"])
-    # x = PasswordPermuter(4, 4).use_generator(
-    #     (
-    #         ["123"],
-    #         [" "],
-    #         ["!", "!1", "*"],
-    #         ["Password", "password", "pa$$word", "Pa$$word", "p@$$w0rd"],
-    #         ["admin", "Admin", "@dmin", "adm1n"],
-    #     )
-    # )
-    # print(x)
-    # try:
-    #     while nxt := next(x):
-    #         print(**nxt)
-    # except StopIteration:
-    #     print("---- Finished ----")
+    while 1:
+        try:
+            print(next(bruteforce_map))
+        except StopIteration:
+            break
