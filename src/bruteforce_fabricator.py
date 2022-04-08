@@ -3,8 +3,9 @@ import os
 import sys
 from typing import Dict, Generator, List
 
-from src.abstract_generator import PWGenerator
+from src.abstract_fabricator import PasswordFabricator
 from src.conf import global_paths
+from src.conf.global_paths import paths
 
 
 class CharacterClass:
@@ -32,7 +33,7 @@ class CharacterClass:
     PRINTABLE = DIGITS + ASCII_LETTERS + PUNCTUATION + WHITESPACE
 
 
-class BruteforcePWGenerator(PWGenerator):
+class BruteforcePWFabricator(PasswordFabricator):
     def __init__(self, min_len: int, max_len: int, /, *, filename: str = None, combinatoric_iterator: callable = None) -> None:
         super().__init__()
         if min_len > max_len:
@@ -83,7 +84,7 @@ class BruteforcePWGenerator(PWGenerator):
 
         """ Calc & write min_len to max_len password combinations """
         character_list_sorted = self.__remove_list_duplicates(character_lists)
-        with open(os.path.join(global_paths.config["OUT_DIR"], self._filename), "w") as file_out:
+        with open(os.path.join(paths["OUT_DIR"], self._filename), "w") as file_out:
             for password_length in range(self._min_len, self._max_len + 1):
                 splat_arg = self.__get_splat_arg(password_length)
                 for character_combination in list(self._combinatoric_iterator(character_list_sorted, **splat_arg)):

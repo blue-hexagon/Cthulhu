@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Generator, List, Tuple
 
 
-class PWGenerator(ABC):
+class PasswordFabricator(ABC):
     """
     -- Implemented --
     itertools.product('ABCD', repeat=2):

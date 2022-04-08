@@ -17,7 +17,6 @@ import itertools
 from src.bruteforce_generator import BruteforcePWGenerator, CharacterClass
 from src.dictionary_generator import DictionaryPWGenerator
 
-
 def use_bruteforce():
     BruteforcePWGenerator(4, 4, filename="hex_upper__4_4.txt", combinatoric_iterator=itertools.product).use_filewriter(
         [CharacterClass.DIGITS, CharacterClass.HEXDIGITS_UPPER]

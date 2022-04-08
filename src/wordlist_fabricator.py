@@ -3,11 +3,12 @@ import os
 import sys
 from typing import Generator, List, Tuple
 
-from src.abstract_generator import PWGenerator
+from src.abstract_fabricator import PasswordFabricator
 from src.conf import global_paths
+from src.conf.global_paths import paths
 
 
-class DictionaryPWGenerator(PWGenerator):
+class WordlistPWFabricator(PasswordFabricator):
     def __init__(self, /, *, filename: str = None) -> None:
         super().__init__()
         self.combinatorics_tool = itertools.product
@@ -30,7 +31,7 @@ class DictionaryPWGenerator(PWGenerator):
             elif isinstance(input_data[counter], str):
                 password_collection.append(input_data[counter])
             else:
-                raise ValueError(f"You must quote any list-item in the word list you pass to the {DictionaryPWGenerator}")
+                raise ValueError(f"You must quote any list-item in the word list you pass to the {WordlistPWFabricator}")
         password_collection = list(itertools.product(*password_collection))
         password_collection = ["".join(password) for password in password_collection]
         return password_collection
@@ -44,7 +45,7 @@ class DictionaryPWGenerator(PWGenerator):
 
         """Calc & write min_len to max_len password combinations"""
         password_collection = self.__get_password_combinations(word_lists)
-        with open(os.path.join(global_paths.config["OUT_DIR"], self._filename), "w") as file_out:
+        with open(os.path.join(paths["OUT_DIR"], self._filename), "w") as file_out:
             for password in password_collection:
                 file_out.write(f"{password}\n")
 

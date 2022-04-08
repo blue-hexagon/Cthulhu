@@ -1,10 +1,10 @@
 import os
 
-from src.conf import global_paths
+from src.conf.global_paths import paths
 
 
 def test_paths_resolves():
-    assert os.path.exists(global_paths.config["ROOT_DIR"])
-    assert os.path.exists(global_paths.config["SRC_DIR"])
-    assert os.path.exists(global_paths.config["TEST_DIR"])
-    assert os.path.exists(global_paths.config["OUT_DIR"])
+    assert os.path.exists(paths["ROOT_DIR"])
+    assert os.path.exists(paths["SRC_DIR"])
+    assert os.path.exists(paths["TEST_DIR"])
+    assert os.path.exists(paths["OUT_DIR"])

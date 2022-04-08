@@ -1,6 +1,6 @@
 import re
 
-from src.bruteforce_generator import CharacterClass
+from src.bruteforce_fabricator import CharacterClass
 
 
 def test_keyspace_constants():

@@ -1,7 +1,7 @@
 import os
 import pathlib
 
-config = {
+paths = {
     "ROOT_DIR": pathlib.Path(__file__).parent.parent.parent.absolute(),
     "SRC_DIR": os.path.join(pathlib.Path(__file__).parent.parent.parent.absolute(), "src"),
     "OUT_DIR": os.path.join(pathlib.Path(__file__).parent.parent.parent.absolute(), "out"),
@@ -9,7 +9,7 @@ config = {
 }
 
 if __name__ == "__main__":
-    print(config["ROOT_DIR"])
-    print(config["SRC_DIR"])
-    print(config["OUT_DIR"])
-    print(config["TEST_DIR"])
+    print(paths["ROOT_DIR"])
+    print(paths["SRC_DIR"])
+    print(paths["OUT_DIR"])
+    print(paths["TEST_DIR"])
