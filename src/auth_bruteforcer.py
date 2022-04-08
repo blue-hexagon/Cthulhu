@@ -50,12 +50,12 @@ class WebAuthBruteforcer:
             thread = threading.Thread(target=self.bruteforcer, args=[perm_subset])
             thread.start()
 
-    def bruteforcer(self, perm_subset) -> None:
-        for perm in perm_subset:
-            # if b"auth_token" in data:
-            # print("Found Token -> " + data.decode("utf-8"))
-            # return
-            ...
+    @staticmethod
+    def bruteforcer(perm_subset) -> None:
+        for data in perm_subset:
+            if b"auth_token" in data:
+                print("Found Token -> " + data.decode("utf-8"))
+                return
 
     def simple_form_auth(self):
         conn = http.client.HTTPSConnection(self.target_host)
