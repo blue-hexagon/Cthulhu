@@ -1,14 +1,12 @@
-import socket
 import logging
+import socket
+
 
 class Node:
-    """ A node recieves requests from Cthulhu """
+    """A node recieves requests from Cthulhu"""
 
     def __init__(self):
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format="[ %(asctime)s ] - [%(name)s-%(lineno)d] - [%(levelname)s] %(message)s"
-        )
+        logging.basicConfig(level=logging.DEBUG, format="[ %(asctime)s ] - [%(name)s-%(lineno)d] - [%(levelname)s] %(message)s")
         logger = logging.getLogger("node-logger")
         logger.info(f"Setting up node: {socket.gethostname()}@{socket.gethostbyname(socket.gethostname())}")
         self.hostname = socket.gethostname()
@@ -20,8 +18,9 @@ class Node:
     @staticmethod
     def get_ipaddr_from_hostname(hostname="www.google.com"):
         return socket.gethostbyname(hostname)
+
     @staticmethod
-    def convert_byteorder(data,byteorder):
+    def convert_byteorder(data, byteorder):
         """
         htonl() translates an unsigned long integer into network byte order.
         htons() translates an unsigned short integer into network byte order.
@@ -55,5 +54,5 @@ class Node:
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
