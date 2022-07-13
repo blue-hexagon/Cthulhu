@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from protocol_operation import ProtocolOperation
+
 
 class FrameSegment:
     def __init__(self, segment):
@@ -9,13 +11,12 @@ class FrameSegment:
 
 @dataclass
 class Frame:
-    frame_length: str
     message_id: str
-    operation: str
+    operation: ProtocolOperation
     message: str
 
-    def get_framelength(self):
-        return self.frame_length
+    def __len__(self):
+        return len(self.message_id.encode("utf-8")) + len(repr(self.operation)) + len(self.message.encode("utf-8"))
 
     def get_id(self):
         return self.message_id
