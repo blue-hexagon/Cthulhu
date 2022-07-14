@@ -82,11 +82,11 @@ class WebAuthBruteforcer:
             case AuthMethod.SIMPLE_FORM_METHOD:
                 self.simple_form_auth()
             case AuthMethod.COMPLEX_FORM_AUTH:
-                raise NotImplementedError("Todo")
+                raise NotImplementedError("Todo")  # TODO
             case AuthMethod.MFA_OR_CAPTCHA_AUTH:
-                raise NotImplementedError("Todo")
+                raise NotImplementedError("Todo")  # TODO
             case AuthMethod.BASIC_HTTP_OR_NTLM_AUTH:
-                raise NotImplementedError("Todo")
+                raise NotImplementedError("Todo")  # TODO
             case _:
                 raise KeyError("Authentication method not recognized.")
 

@@ -27,7 +27,7 @@ class PasswordFabricator(ABC):
     - r-length tuples, in sorted order, with repeated elements
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     @abstractmethod

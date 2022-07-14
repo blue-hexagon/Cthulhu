@@ -1,7 +1,6 @@
 import os
 import pathlib
 
-from src.conf import global_paths
 from src.conf.global_paths import paths
 from src.wordlist_fabricator import WordlistPWFabricator
 

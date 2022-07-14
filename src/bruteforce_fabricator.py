@@ -4,7 +4,6 @@ import sys
 from typing import Dict, Generator, List
 
 from src.abstract_fabricator import PasswordFabricator
-from src.conf import global_paths
 from src.conf.global_paths import paths
 
 
@@ -68,9 +67,9 @@ class BruteforcePWFabricator(PasswordFabricator):
         elif self._combinatoric_iterator is itertools.permutations:
             splat_arg = {"r": password_length}
         elif self._combinatoric_iterator is itertools.combinations:
-            raise NotImplementedError(f"Callable `{self._combinatoric_iterator}` not implemented.")
+            raise NotImplementedError(f"Callable `{self._combinatoric_iterator}` not implemented.")  # TODO
         elif self._combinatoric_iterator is itertools.combinations_with_replacement:
-            raise NotImplementedError(f"Callable `{self._combinatoric_iterator}` not implemented.")
+            raise NotImplementedError(f"Callable `{self._combinatoric_iterator}` not implemented.")  # TODO
         else:
             raise ValueError(f"Callable `{self._combinatoric_iterator}` not recognized.")
         return splat_arg
