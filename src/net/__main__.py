@@ -1,8 +1,10 @@
+import os
 import pickle
 import socket
 import sys
 from datetime import datetime
 
+from colorama import Back, Fore
 from frame import Frame, FrameSequence
 from protocol_operation import (
     NodeFireAuthAttack,
@@ -17,17 +19,52 @@ from protocol_operation import (
 
 
 class Logger:
-    def __init__(self, hostname) -> None:
-        self.hostname = hostname
+    width = os.get_terminal_size().columns
 
-    def log_msg(self, info: str) -> None:
-        print(f'[{datetime.now().strftime("%H:%M:%S")} – {self.hostname}]: {info}')
+    def __init__(self, colors: bool = True) -> None:
+        if not colors:
+            Fore.LIGHTWHITE_EX = ""
+            Fore.YELLOW = ""
+            Back.BLACK = ""
+            Back.GREEN = ""
+            Back.YELLOW = ""
+            Back.RED = ""
+
+    @staticmethod
+    def get_message(msg: str):
+        return f'[{datetime.now().strftime("%H:%M:%S")} – {socket.gethostname()}]: {msg}'
+
+    @staticmethod
+    def debug(msg: str) -> None:
+        print(f"{Fore.BLACK}{Back.LIGHTWHITE_EX}{Logger.get_message(msg)}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
+
+    @staticmethod
+    def info(msg: str) -> None:
+        print(f"{Fore.LIGHTWHITE_EX}{Back.BLUE}{Logger.get_message(msg)}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
+
+    @staticmethod
+    def success(msg: str) -> None:
+        print(f"{Fore.LIGHTWHITE_EX}{Back.GREEN}{Logger.get_message(msg)}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
+
+    @staticmethod
+    def warning(msg: str) -> None:
+        print(f"{Fore.LIGHTWHITE_EX}{Back.YELLOW}{Logger.get_message(msg)}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
+
+    @staticmethod
+    def error(msg: str) -> None:
+        print(f"{Fore.LIGHTWHITE_EX}{Back.RED}{Logger.get_message(msg)}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
+
+    @staticmethod
+    def critical(msg: str) -> None:
+        print(f"{Fore.YELLOW}{Back.RED}{Logger.get_message(msg)}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
 
 
 class Formatter:
     @staticmethod
     def fprint(transmitter: str, msg: str | Frame | FrameSequence) -> None:
-        print(f'[{datetime.now().strftime("%H:%M:%S")} – {transmitter} -> {Formatter.get_localhost_name()}]:\n{msg}')
+        info_msg = f'[{datetime.now().strftime("%H:%M:%S")} – {transmitter} -> {Formatter.get_localhost_name()}]: FrameSequence recieved'
+        print(f"{Fore.LIGHTWHITE_EX}{Back.GREEN}{info_msg}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
+        print(msg)
 
     @staticmethod
     def get_localhost_name() -> str:
@@ -42,16 +79,54 @@ class Formatter:
         return f"{sc.getsockname()[0]}:{sc.getsockname()[1]}"
 
     @staticmethod
-    def get_peer_addr(sc) -> str:
+    def get_peer_addr(sc: socket.socket) -> str:
         return f"{sc.getpeername()[0]}:{sc.getpeername()[1]}"
 
 
 class TcpSocket:
-    def __init__(self, *args, **kwargs) -> None:
-        pass
+    def __init__(self, host: str, port: int, timeout: int, server: bool, client: bool) -> None:
+        """Setup and configure sockets"""
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.host = host
+        self.port = port
+        self.log = Logger()
+        self.fprint = Formatter.fprint
+        self.hostname = Formatter.get_localhost_name
+        self.peername = Formatter.get_peer_hostname
+        self.hostaddr = Formatter.get_localhost_addr
+        self.peeraddr = Formatter.get_peer_addr
+        if server and not client:
+            self.s.settimeout(timeout)
+            self.s.bind((host, port))
+            self.s.listen()
+            self.log.info(f"Listening at {self.hostaddr(self.s)}")
+        elif client and not server:
+            self.s.settimeout(timeout)
+            try:
+                self.s.connect((host, port))
+            except ConnectionRefusedError:
+                self.log.error(f"Connection to {self.peername(host)} refused")
+                sys.exit(1)
+            except TimeoutError:
+                self.log.error("Connection timed out")
+                sys.exit(1)
+            self.log.info(f"You have been assigned socket: {self.hostaddr(self.s)}")
+        else:
+            raise ValueError("Client and server bool params to TcpSocket is misconfigured.")
 
-    def recv_all(self, sock: socket.socket, length: int = 1024 * 1024) -> str:
-        data = b""
+    def accept_incoming_connection(self) -> socket.socket:
+        try:
+            s, sockname = self.s.accept()
+            self.log.success(f"Recieved a connection from {self.peername(self.host)}@{self.peeraddr(s)}")
+            return s
+        except TimeoutError:
+            self.log.error("Connection timed out")
+            sys.exit(1)
+
+    @staticmethod
+    def recv_all(sock: socket.socket, length: int = 1024 * 1024) -> str:
+        """Recieve the pickled data then unpickle it and return the unpickled data"""
+        data = b""  # TODO switch data to be type of bytes array and then join the bytesarray before deserializing (this should be faster)
         while len(data) < length:
             try:
                 more = sock.recv(length - len(data))
@@ -64,50 +139,57 @@ class TcpSocket:
         deserialized_data = pickle.loads(data)
         return deserialized_data
 
-    def send_all(self, sock: socket.socket, msg: Frame | FrameSequence) -> None:
-        serialized_data = pickle.dumps(msg.frames)
+    @staticmethod
+    def send_all(sock: socket.socket, msg: FrameSequence) -> None:
+        """Pickle the FrameSequence then send the pickle"""
+        serialized_data = pickle.dumps(msg)
         sock.sendall(serialized_data)
 
-    def _bytes(self, msg: str) -> bytes:
+    @staticmethod
+    def trx(sock: socket.socket, msg: FrameSequence):
+        """Transmit then recieve"""
+        TcpSocket.send_all(sock, msg)  # Send all
+        recv = TcpSocket.recv_all(sock)  # Recieve all
+        return recv
+
+    @staticmethod
+    def rtx(sock: socket.socket, msg: FrameSequence):
+        """Recieve then transmit"""
+        recv = TcpSocket.recv_all(sock)  # Recieve all
+        TcpSocket.send_all(sock, msg)  # Send all
+        return recv
+
+    @staticmethod
+    def _bytes(msg: str) -> bytes:
+        """Convert a string to UTF-8 encoded bytes"""
         return bytes(msg.encode("utf-8"))
 
-    def _string(self, msg: bytes) -> str:
+    @staticmethod
+    def _string(msg: bytes) -> str:
+        """Convert UTF-8 encoded bytes to a string"""
         return msg.decode("utf-8")
 
 
 class TCPServer(TcpSocket):
-    def __init__(self, s: socket.socket, host: str, port: int, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        s.bind((host, port))
-        s.listen()
+    """Server code goes here"""
 
-        log = Logger(Formatter.get_localhost_name()).log_msg
-        fprint = Formatter.fprint
-
-        log(f"Listening at {Formatter.get_localhost_addr(s)}")
-        try:
+    def __init__(self, host: str, port: int, timeout=0) -> None:
+        super().__init__(host, port, timeout, server=True, client=False)
+        while True:
+            s: socket.socket = self.accept_incoming_connection()
             while True:
-                sc: socket.socket
-                sc, sockname = s.accept()
-                log(f"Recieved a connection from {Formatter.get_peer_hostname(host)}@{Formatter.get_peer_addr(sc)}")
-                while True:
-                    frame_sequence = self.recv_all(sc)
-                    fprint(Formatter.get_peer_hostname(host), frame_sequence)
-                    # If type(frame_sequence[:-1].operation) == type(NodeEndConnection)
-                    break
-                sc.close()
-        except TimeoutError:
-            log("Connection timed out")
-            sys.exit(0)
+                frame_sequence = TcpSocket.recv_all(s)
+                self.fprint(self.peername(host), frame_sequence)
+                # If type(frame_sequence[:-1].operation) == type(NodeEndConnection)
+                break
+            s.close()
 
 
 class TCPClient(TcpSocket):
-    def __init__(self, s: socket.socket, host: str, port: int, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.log = Logger("Client").log_msg
+    """Client code goes here"""
 
-        s.connect((host, port))
-        self.log(f"You have been assigned socket name {Formatter.get_localhost_addr(s)}")
+    def __init__(self, host: str, port: int, timeout=0) -> None:
+        super().__init__(host, port, timeout, server=False, client=True)
         packet_stream = FrameSequence(
             Frame(NodeSetSleep(time="3s")),
             Frame(NodeSetAuthProtocol(protocol="ssh")),
@@ -115,22 +197,24 @@ class TCPClient(TcpSocket):
             Frame(NodeRecievePasswords(amount="25-100")),
             Frame(NodeFireAuthAttack(delay="10m")),
         )
-        self.send_all(s, packet_stream)
-        # self.send_all(s, Frame(message="", message_id="10", operation=NodeFireAuthAttack(delay="0s")))
-        s.close()
+        while True:
+            TcpSocket.send_all(self.s, packet_stream)
+            # Formatter.fprint(self.peername(host), self.recv_all(s))
+            break
+        self.s.close()
 
 
 if __name__ == "__main__":
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(8)
+    """Set addresses and ports for the server and client"""
     HOST_IP = "127.0.0.1"
     HOST_PORT = 1060
     REMOTE_IP = "127.0.0.1"
     REMOTE_PORT = 1060
 
+    """ Run either the server or client """
     if sys.argv[1:] == ["server"]:
-        TCPServer(s, HOST_IP, HOST_PORT)
+        TCPServer(HOST_IP, HOST_PORT, timeout=8)
     elif sys.argv[1:] == ["client"]:
-        TCPClient(s, REMOTE_IP, REMOTE_PORT)
+        TCPClient(REMOTE_IP, REMOTE_PORT, timeout=2)
     else:
         print("Usage: dev.py server|client")

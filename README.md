@@ -1,14 +1,25 @@
-# Cthulhu
-
-The distributed login-cracker with a module for creating word-lists and bruteforce lists.
+# Cthulhu [WIP]
 
 ## About
+Cthulhu is a project im currently developing that utilizes hosts to carry out distributed password cracking.
 
-Cthulhu is a distributed login-cracker that can work on an endless (almost) number of clients. Cthulhu acts as
-puppet-master which controls the clients and uses them to carry out a distributed login attack. All that is needed is
-for Cthulhu's client software to be installed and Cthulhu will be able to connect to the client and use it in an attack.
+## Status
+### Finished Features
+- Can create bruteforce password lists saved as files or as a stream (with a generator)
+  - Example: All combinations of lowercase alpha + numeric with length 6-10
+  - Example: All hexcharacter combinations with length 8-12
+- Can create word-list permutations saved as a file or used as a stream
+- All itertools combinatoric iterators are supported, theese are:
+  - [product](https://docs.python.org/3/library/itertools.html#itertools.product) (cartesian product) - this is what you most likely want to use
+  - [permutations](https://docs.python.org/3/library/itertools.html#itertools.permutations)
+  - [combinations](https://docs.python.org/3/library/itertools.html#itertools.combinations)
+  - [combinations with replacement](https://docs.python.org/3/library/itertools.html#itertools.combinations_with_replacement)
+- Object serialization/deserialization for packets in transit
+- Simple form authentication attack
+- SSH authentication attack
 
-Cthulhu is able to create bruteforce and dictionary lists of password.
+### Features in Progress
+Currently working on the networking protocol and adding concurrency for the master node
 
 ## Usage
 ```python
@@ -55,21 +66,5 @@ if __name__ == "__main__":
     use_wordlist()
 
 ```
-# Goals
-Support of:
- - Webform Authentication
- - SSH
- - FTP
 # License
-
-Not determined.
-
-# DevNotes
-
-`git commit --no-verify -m "match not supported by numpy, use this"`
-
-`pre-commit run --all-files`
-
-`pytest --cov`
-
-`bandit -r my_sum`
+Undetermined.

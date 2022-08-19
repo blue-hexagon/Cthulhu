@@ -107,7 +107,7 @@ class NodeSetAuthProtocol(ProtocolOperation):
 
 class NodeEndConnection(ProtocolOperation):
     """
-    Instructs node that cthulhu has closed it's connection to the node
+    Instructs node that cthulhu is about to close it's connection to the node # TODO: how to perform the shutdown.
     - Param None: %
     - Direction: Cthulhu -> Node
     """

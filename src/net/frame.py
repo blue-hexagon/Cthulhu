@@ -58,6 +58,9 @@ class FrameSequence:
         frames_representation = [(str(frame) + "\n") for frame in self.frames]
         return frames_representation
 
+    def __str__(self) -> str:
+        return str(self.frames)
+
 
 if __name__ == "__main__":
     packet_stream = FrameSequence(
