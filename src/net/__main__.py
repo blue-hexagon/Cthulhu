@@ -1,5 +1,6 @@
 import os
 import pickle
+import re
 import socket
 import sys
 from datetime import datetime
@@ -14,7 +15,7 @@ from protocol_operation import (
     NodeSleepBetweenAuthAttempts,
     NodeStopAuthAttack,
     ProtocolOperation,
-    RepeatNextCommands,
+    RepeatNextCommands, NodeEndConnection,
 )
 
 
@@ -36,23 +37,28 @@ class Logger:
 
     @staticmethod
     def debug(msg: str) -> None:
-        print(f"{Fore.BLACK}{Back.LIGHTWHITE_EX}{Logger.get_message(msg)}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
+        print(f"{Fore.BLACK}{Back.LIGHTWHITE_EX}{Logger.get_message(msg)}".ljust(
+            Logger.width) + f"{Fore.RESET}{Back.RESET}")
 
     @staticmethod
     def info(msg: str) -> None:
-        print(f"{Fore.LIGHTWHITE_EX}{Back.BLUE}{Logger.get_message(msg)}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
+        print(f"{Fore.LIGHTWHITE_EX}{Back.BLUE}{Logger.get_message(msg)}".ljust(
+            Logger.width) + f"{Fore.RESET}{Back.RESET}")
 
     @staticmethod
     def success(msg: str) -> None:
-        print(f"{Fore.LIGHTWHITE_EX}{Back.GREEN}{Logger.get_message(msg)}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
+        print(f"{Fore.LIGHTWHITE_EX}{Back.GREEN}{Logger.get_message(msg)}".ljust(
+            Logger.width) + f"{Fore.RESET}{Back.RESET}")
 
     @staticmethod
     def warning(msg: str) -> None:
-        print(f"{Fore.LIGHTWHITE_EX}{Back.YELLOW}{Logger.get_message(msg)}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
+        print(f"{Fore.LIGHTWHITE_EX}{Back.YELLOW}{Logger.get_message(msg)}".ljust(
+            Logger.width) + f"{Fore.RESET}{Back.RESET}")
 
     @staticmethod
     def error(msg: str) -> None:
-        print(f"{Fore.LIGHTWHITE_EX}{Back.RED}{Logger.get_message(msg)}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
+        print(f"{Fore.LIGHTWHITE_EX}{Back.RED}{Logger.get_message(msg)}".ljust(
+            Logger.width) + f"{Fore.RESET}{Back.RESET}")
 
     @staticmethod
     def critical(msg: str) -> None:
@@ -170,18 +176,74 @@ class TcpSocket:
         return msg.decode("utf-8")
 
 
+class Utils():
+    @staticmethod
+    def get_ms_delay(delay):
+        delay_int = re.sub("[^0-9]", "", delay)
+        if delay.find("ms"):
+            return delay
+        elif delay.find("s"):
+            return str(int(delay_int) * 1000)
+        elif delay.find("m"):
+            return str(int(delay_int) * 1000 * 60)
+        elif delay.find("h"):
+            return str(int(delay_int) * 1000 * 60 * 60)
+        raise ValueError("Wrong attack delay specified. Param delay: '<number>[ms|s|m|h]' | Example: '90m'")
+
+
 class TCPServer(TcpSocket):
     """Server code goes here"""
 
     def __init__(self, host: str, port: int, timeout=0) -> None:
+        self.repeat: int = -1
+        self.next_n_commands: int = -1
+        self.pw_cache_limit: int = -1
+        self.fire_attack_delay: int = -1
+        self.stop_attack: bool = False
         super().__init__(host, port, timeout, server=True, client=False)
         while True:
             s: socket.socket = self.accept_incoming_connection()
             while True:
-                frame_sequence = TcpSocket.recv_all(s)
+                try:
+                    frame_sequence = TcpSocket.recv_all(s)
+                except EOFError:
+                    break
                 self.fprint(self.peername(host), frame_sequence)
+                for frame in frame_sequence.frames:
+                    op = frame.operation
+                    if type(frame.operation) is RepeatNextCommands:
+                        self.repeat = op.repeat
+                        self.next_n_commands = op.next_n_commands
+                        Logger.debug(f"Repeat {self.repeat} times the next {self.next_n_commands} commands.")
+
+                    elif type(frame.operation) is NodeRecievePasswords:
+                        self.pw_cache_limit = op.amount
+                        Logger.debug(f"Password cache set to {self.pw_cache_limit}.")
+
+                    elif type(frame.operation) is NodeFireAuthAttack:
+                        self.fire_attack_delay = Utils.get_ms_delay(op.delay)
+                        Logger.debug(f"Fire delay set to {op.delay}.")
+
+                    elif type(frame.operation) is NodeStopAuthAttack:
+                        self.stop_attack_delay = Utils.get_ms_delay(op.delay)
+                        Logger.debug(f"Stop delay set to {op.delay}.")
+
+                    elif type(frame.operation) is NodeSetSleep:
+                        print("hit")
+
+                    elif type(frame.operation) is NodeSleepBetweenAuthAttempts:
+                        print("hit")
+
+                    elif type(frame.operation) is NodeSetAuthProtocol:
+                        print("hit")
+
+                    elif type(frame.operation) is NodeEndConnection:
+                        print("hit")
+
+                    else:
+                        Logger.error(f"Protocol operation not recognized. Ignoring: {op}.")
+
                 # If type(frame_sequence[:-1].operation) == type(NodeEndConnection)
-                break
             s.close()
 
 
@@ -215,6 +277,6 @@ if __name__ == "__main__":
     if sys.argv[1:] == ["server"]:
         TCPServer(HOST_IP, HOST_PORT, timeout=8)
     elif sys.argv[1:] == ["client"]:
-        TCPClient(REMOTE_IP, REMOTE_PORT, timeout=2)
+        TCPClient(REMOTE_IP, REMOTE_PORT, timeout=8)
     else:
         print("Usage: dev.py server|client")
