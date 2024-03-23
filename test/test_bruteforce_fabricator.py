@@ -2,8 +2,8 @@ import itertools
 import os
 import pathlib
 
-from src.bruteforce_fabricator import BruteforcePWFabricator
 from src.conf.global_paths import paths
+from src.passgen.bruteforce_fabricator import BruteforcePWFabricator
 
 
 def test_bruteforce_filewriter():

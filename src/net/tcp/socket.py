@@ -1,92 +1,21 @@
-import os
 import pickle
-import re
 import socket
 import sys
-from datetime import datetime
 
-from colorama import Back, Fore
-from frame import Frame, FrameSequence
-from protocol_operation import (
-    NodeFireAuthAttack,
-    NodeRecievePasswords,
-    NodeSetAuthProtocol,
-    NodeSetSleep,
-    NodeSleepBetweenAuthAttempts,
-    NodeStopAuthAttack,
-    ProtocolOperation,
-    RepeatNextCommands, NodeEndConnection,
+from src.net.fmt import Formatter
+from src.net.logger import Logger
+from src.net.protocol.frame import Frame, FrameSequence
+from src.net.protocol.ops import (
+    CthulhuEndsSubjectConnection,
+    CthulhuInstructsSubjectAboutAttackProtocol,
+    CthulhuInstructsSubjectToSleepBetweenAuthAttempts,
+    CthulhuTellsNodeToStopAuthAttack,
+    CthulhuTellsSubjectToAttack,
+    MakeAnyRepeatNextCommands,
+    MakeAnySleepForDuration,
+    SubjectAsksCthulhuForPasswords,
 )
-
-
-class Logger:
-    width = os.get_terminal_size().columns
-
-    def __init__(self, colors: bool = True) -> None:
-        if not colors:
-            Fore.LIGHTWHITE_EX = ""
-            Fore.YELLOW = ""
-            Back.BLACK = ""
-            Back.GREEN = ""
-            Back.YELLOW = ""
-            Back.RED = ""
-
-    @staticmethod
-    def get_message(msg: str):
-        return f'[{datetime.now().strftime("%H:%M:%S")} – {socket.gethostname()}]: {msg}'
-
-    @staticmethod
-    def debug(msg: str) -> None:
-        print(f"{Fore.BLACK}{Back.LIGHTWHITE_EX}{Logger.get_message(msg)}".ljust(
-            Logger.width) + f"{Fore.RESET}{Back.RESET}")
-
-    @staticmethod
-    def info(msg: str) -> None:
-        print(f"{Fore.LIGHTWHITE_EX}{Back.BLUE}{Logger.get_message(msg)}".ljust(
-            Logger.width) + f"{Fore.RESET}{Back.RESET}")
-
-    @staticmethod
-    def success(msg: str) -> None:
-        print(f"{Fore.LIGHTWHITE_EX}{Back.GREEN}{Logger.get_message(msg)}".ljust(
-            Logger.width) + f"{Fore.RESET}{Back.RESET}")
-
-    @staticmethod
-    def warning(msg: str) -> None:
-        print(f"{Fore.LIGHTWHITE_EX}{Back.YELLOW}{Logger.get_message(msg)}".ljust(
-            Logger.width) + f"{Fore.RESET}{Back.RESET}")
-
-    @staticmethod
-    def error(msg: str) -> None:
-        print(f"{Fore.LIGHTWHITE_EX}{Back.RED}{Logger.get_message(msg)}".ljust(
-            Logger.width) + f"{Fore.RESET}{Back.RESET}")
-
-    @staticmethod
-    def critical(msg: str) -> None:
-        print(f"{Fore.YELLOW}{Back.RED}{Logger.get_message(msg)}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
-
-
-class Formatter:
-    @staticmethod
-    def fprint(transmitter: str, msg: str | Frame | FrameSequence) -> None:
-        info_msg = f'[{datetime.now().strftime("%H:%M:%S")} – {transmitter} -> {Formatter.get_localhost_name()}]: FrameSequence recieved'
-        print(f"{Fore.LIGHTWHITE_EX}{Back.GREEN}{info_msg}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
-        print(msg)
-
-    @staticmethod
-    def get_localhost_name() -> str:
-        return socket.gethostbyaddr(socket.gethostname())[0]
-
-    @staticmethod
-    def get_peer_hostname(foreign_host_addr: str) -> str:
-        return socket.gethostbyaddr(foreign_host_addr)[0]
-
-    @staticmethod
-    def get_localhost_addr(sc: socket.socket) -> str:
-        return f"{sc.getsockname()[0]}:{sc.getsockname()[1]}"
-
-    @staticmethod
-    def get_peer_addr(sc: socket.socket) -> str:
-        return f"{sc.getpeername()[0]}:{sc.getpeername()[1]}"
+from src.net.util import Utils
 
 
 class TcpSocket:
@@ -116,7 +45,8 @@ class TcpSocket:
             except TimeoutError:
                 self.log.error("Connection timed out")
                 sys.exit(1)
-            self.log.info(f"You have been assigned socket: {self.hostaddr(self.s)}")
+            else:
+                self.log.info(f"You have been assigned socket: {self.hostaddr(self.s)}")
         else:
             raise ValueError("Client and server bool params to TcpSocket is misconfigured.")
 
@@ -176,21 +106,6 @@ class TcpSocket:
         return msg.decode("utf-8")
 
 
-class Utils():
-    @staticmethod
-    def get_ms_delay(delay):
-        delay_int = re.sub("[^0-9]", "", delay)
-        if delay.find("ms"):
-            return delay
-        elif delay.find("s"):
-            return str(int(delay_int) * 1000)
-        elif delay.find("m"):
-            return str(int(delay_int) * 1000 * 60)
-        elif delay.find("h"):
-            return str(int(delay_int) * 1000 * 60 * 60)
-        raise ValueError("Wrong attack delay specified. Param delay: '<number>[ms|s|m|h]' | Example: '90m'")
-
-
 class TCPServer(TcpSocket):
     """Server code goes here"""
 
@@ -211,72 +126,68 @@ class TCPServer(TcpSocket):
                 self.fprint(self.peername(host), frame_sequence)
                 for frame in frame_sequence.frames:
                     op = frame.operation
-                    if type(frame.operation) is RepeatNextCommands:
+                    op_type = type(frame.operation)
+                    if op_type is MakeAnyRepeatNextCommands:
                         self.repeat = op.repeat
                         self.next_n_commands = op.next_n_commands
                         Logger.debug(f"Repeat {self.repeat} times the next {self.next_n_commands} commands.")
 
-                    elif type(frame.operation) is NodeRecievePasswords:
+                    elif op_type is SubjectAsksCthulhuForPasswords:
                         self.pw_cache_limit = op.amount
                         Logger.debug(f"Password cache set to {self.pw_cache_limit}.")
 
-                    elif type(frame.operation) is NodeFireAuthAttack:
+                    elif op_type is CthulhuTellsSubjectToAttack:
                         self.fire_attack_delay = Utils.get_ms_delay(op.delay)
                         Logger.debug(f"Fire delay set to {op.delay}.")
 
-                    elif type(frame.operation) is NodeStopAuthAttack:
+                    elif op_type is CthulhuTellsNodeToStopAuthAttack:
                         self.stop_attack_delay = Utils.get_ms_delay(op.delay)
                         Logger.debug(f"Stop delay set to {op.delay}.")
 
-                    elif type(frame.operation) is NodeSetSleep:
+                    elif op_type is MakeAnySleepForDuration:
                         print("hit")
 
-                    elif type(frame.operation) is NodeSleepBetweenAuthAttempts:
+                    elif op_type is CthulhuInstructsSubjectToSleepBetweenAuthAttempts:
                         print("hit")
 
-                    elif type(frame.operation) is NodeSetAuthProtocol:
+                    elif op_type is CthulhuInstructsSubjectAboutAttackProtocol:
                         print("hit")
 
-                    elif type(frame.operation) is NodeEndConnection:
+                    elif op_type is CthulhuEndsSubjectConnection:
                         print("hit")
 
                     else:
                         Logger.error(f"Protocol operation not recognized. Ignoring: {op}.")
-
-                # If type(frame_sequence[:-1].operation) == type(NodeEndConnection)
             s.close()
 
 
 class TCPClient(TcpSocket):
     """Client code goes here"""
 
+    PAYLOAD = [
+        FrameSequence(
+            Frame(AnyInitiateConnection()),
+        ),
+        FrameSequence(
+            Frame(MakeAnySleepForDuration(time="3s")),
+            Frame(CthulhuInstructsSubjectAboutAttackProtocol(protocol="ssh")),
+            Frame(MakeAnyRepeatNextCommands(repeat="5", next_n_commands="5")),
+            Frame(SubjectAsksCthulhuForPasswords(amount="25-100")),
+            Frame(CthulhuTellsSubjectToAttack(delay="10m")),
+        ),
+        FrameSequence(
+            Frame(MakeAnySleepForDuration(time="3s")),
+        ),
+        FrameSequence(
+            Frame(CthulhuEndsSubjectConnection()),
+        ),
+    ]
+
     def __init__(self, host: str, port: int, timeout=0) -> None:
         super().__init__(host, port, timeout, server=False, client=True)
-        packet_stream = FrameSequence(
-            Frame(NodeSetSleep(time="3s")),
-            Frame(NodeSetAuthProtocol(protocol="ssh")),
-            Frame(RepeatNextCommands(repeat="5", next_n_commands="5")),
-            Frame(NodeRecievePasswords(amount="25-100")),
-            Frame(NodeFireAuthAttack(delay="10m")),
-        )
+        packet_stream = TCPClient.PAYLOAD
         while True:
             TcpSocket.send_all(self.s, packet_stream)
             # Formatter.fprint(self.peername(host), self.recv_all(s))
             break
         self.s.close()
-
-
-if __name__ == "__main__":
-    """Set addresses and ports for the server and client"""
-    HOST_IP = "127.0.0.1"
-    HOST_PORT = 1060
-    REMOTE_IP = "127.0.0.1"
-    REMOTE_PORT = 1060
-
-    """ Run either the server or client """
-    if sys.argv[1:] == ["server"]:
-        TCPServer(HOST_IP, HOST_PORT, timeout=8)
-    elif sys.argv[1:] == ["client"]:
-        TCPClient(REMOTE_IP, REMOTE_PORT, timeout=8)
-    else:
-        print("Usage: dev.py server|client")

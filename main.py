@@ -1,13 +1,8 @@
-import itertools
 import socket
 import sys
 from datetime import datetime
 
-from src.bruteforce_fabricator import BruteforcePWFabricator, CharacterClass
-from src.wordlist_fabricator import WordlistPWFabricator
-
-
-
+from src.passgen.wordlist_fabricator import WordlistPWFabricator
 
 if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -64,4 +59,3 @@ if __name__ == "__main__":
                 sys.exit(1)
     else:
         print(sys.stderr, "usage: *.py server | client")
-

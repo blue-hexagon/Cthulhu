@@ -1,16 +1,15 @@
 import random
 import time
+from pprint import pprint
 from typing import List
 
-from protocol_operation import (
-    NodeFireAuthAttack,
-    NodeRecievePasswords,
-    NodeSetAuthProtocol,
-    NodeSetSleep,
-    NodeSleepBetweenAuthAttempts,
-    NodeStopAuthAttack,
-    ProtocolOperation,
-    RepeatNextCommands,
+from src.net.protocol.operation import ProtocolOperation
+from src.net.protocol.ops import (
+    CthulhuInstructsSubjectAboutAttackProtocol,
+    CthulhuTellsSubjectToAttack,
+    MakeAnyRepeatNextCommands,
+    MakeAnySleepForDuration,
+    SubjectAsksCthulhuForPasswords,
 )
 
 
@@ -64,10 +63,10 @@ class FrameSequence:
 
 if __name__ == "__main__":
     packet_stream = FrameSequence(
-        Frame(NodeSetSleep(time="3s")),
-        Frame(NodeSetAuthProtocol(protocol="ssh")),
-        Frame(RepeatNextCommands(repeat="5", next_n_commands="5")),
-        Frame(NodeRecievePasswords(amount="25-100")),
-        Frame(NodeFireAuthAttack(delay="10m")),
+        Frame(MakeAnySleepForDuration(time="3s")),
+        Frame(CthulhuInstructsSubjectAboutAttackProtocol(protocol="ssh")),
+        Frame(MakeAnyRepeatNextCommands(repeat="5", next_n_commands="5")),
+        Frame(SubjectAsksCthulhuForPasswords(amount="25-100")),
+        Frame(CthulhuTellsSubjectToAttack(delay="10m")),
     )
-    print(repr(packet_stream.frames))
+    pprint(repr(packet_stream.frames))

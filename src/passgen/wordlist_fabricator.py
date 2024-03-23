@@ -3,8 +3,8 @@ import os
 import sys
 from typing import Generator, List, Tuple
 
-from src.abstract_fabricator import PasswordFabricator
 from src.conf.global_paths import paths
+from src.passgen.abstract_fabricator import PasswordFabricator
 
 
 class WordlistPWFabricator(PasswordFabricator):
