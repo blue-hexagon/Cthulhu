@@ -14,8 +14,8 @@ from src.net.protocol.ops import (
     MakeAnySleepForDuration,
     SubjectAsksCthulhuForPasswords, AnyInitiateConnection,
 )
+from src.net.terminal.narrator import Narrator
 from src.net.util import Utils
-from src.utils.logger import get_logger
 
 
 class TcpSocket:
@@ -24,7 +24,7 @@ class TcpSocket:
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.host = host
         self.port = port
-        self.log = get_logger()
+        self.narrator = Narrator()
         self.fprint = Formatter.fprint
         self.hostname = Formatter.get_localhost_name
         self.peername = Formatter.get_peer_hostname
@@ -34,7 +34,7 @@ class TcpSocket:
             self.s.settimeout(timeout)
             self.s.bind((host, port))
             self.s.listen()
-            self.log.info(f"Listening at {self.hostaddr(self.s)}")
+            self.narrator.info(f"Listening at {self.hostaddr(self.s)}")
         elif client and not server:
             self.s.settimeout(timeout)
             try:
@@ -42,23 +42,23 @@ class TcpSocket:
             except BlockingIOError:
                 print("Blocking error FIX") # FIXME
             except ConnectionRefusedError:
-                self.log.error(f"Connection to {self.peername(host)} refused")
+                self.narrator.error(f"Connection to {self.peername(host)} refused")
                 sys.exit(1)
             except TimeoutError:
-                self.log.error("Connection timed out")
+                self.narrator.error("Connection timed out")
                 sys.exit(1)
             else:
-                self.log.info(f"You have been assigned socket: {self.hostaddr(self.s)}")
+                self.narrator.info(f"You have been assigned socket: {self.hostaddr(self.s)}")
         else:
             raise ValueError("Client and server bool params to TcpSocket is misconfigured.")
 
     def accept_incoming_connection(self) -> socket.socket:
         try:
             s, sockname = self.s.accept()
-            self.log.success(f"Recieved a connection from {self.peername(self.host)}@{self.peeraddr(s)}")
+            self.narrator.success(f"Recieved a connection from {self.peername(self.host)}@{self.peeraddr(s)}")
             return s
         except TimeoutError:
-            self.log.error("Connection timed out")
+            self.narrator.error("Connection timed out")
             sys.exit(1)
 
     @staticmethod
@@ -132,19 +132,19 @@ class TCPServer(TcpSocket):
                     if op_type is MakeAnyRepeatNextCommands:
                         self.repeat = op.repeat
                         self.next_n_commands = op.next_n_commands
-                        Logger.debug(f"Repeat {self.repeat} times the next {self.next_n_commands} commands.")
+                        self.narrator.debug(f"Repeat {self.repeat} times the next {self.next_n_commands} commands.")
 
                     elif op_type is SubjectAsksCthulhuForPasswords:
                         self.pw_cache_limit = op.amount
-                        Logger.debug(f"Password cache set to {self.pw_cache_limit}.")
+                        self.narrator.debug(f"Password cache set to {self.pw_cache_limit}.")
 
                     elif op_type is CthulhuTellsSubjectToAttack:
                         self.fire_attack_delay = Utils.get_ms_delay(op.delay)
-                        Logger.debug(f"Fire delay set to {op.delay}.")
+                        self.narrator.debug(f"Fire delay set to {op.delay}.")
 
                     elif op_type is CthulhuTellsNodeToStopAuthAttack:
                         self.stop_attack_delay = Utils.get_ms_delay(op.delay)
-                        Logger.debug(f"Stop delay set to {op.delay}.")
+                        self.narrator.debug(f"Stop delay set to {op.delay}.")
 
                     elif op_type is MakeAnySleepForDuration:
                         print("hit")
@@ -159,7 +159,7 @@ class TCPServer(TcpSocket):
                         print("hit")
 
                     else:
-                        Logger.error(f"Protocol operation not recognized. Ignoring: {op}.")
+                        self.narrator.error(f"Protocol operation not recognized. Ignoring: {op}.")
             s.close()
 
 

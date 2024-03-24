@@ -3,7 +3,7 @@ import os
 import sys
 from typing import Dict, Generator, List
 
-from src.conf.path_manager import paths
+from src.conf.path_manager import PathManager
 from src.passgen.abstract_fabricator import PasswordFabricator
 
 
@@ -82,8 +82,9 @@ class BruteforcePWFabricator(PasswordFabricator):
             print("A filename attribute is needed when using the `filewriter` method.")
 
         """ Calc & write min_len to max_len password combinations """
+        pm = PathManager()
         character_list_sorted = self.__remove_list_duplicates(character_lists)
-        with open(os.path.join(paths["OUT_DIR"], self._filename), "w") as file_out:
+        with open(os.path.join(pm.out_root, self._filename), "w") as file_out:
             for password_length in range(self._min_len, self._max_len + 1):
                 splat_arg = self.__get_splat_arg(password_length)
                 for character_combination in list(self._combinatoric_iterator(character_list_sorted, **splat_arg)):

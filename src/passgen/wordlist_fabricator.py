@@ -3,7 +3,7 @@ import os
 import sys
 from typing import Generator, List, Tuple
 
-from src.conf.path_manager import paths
+from src.conf.path_manager import PathManager
 from src.passgen.abstract_fabricator import PasswordFabricator
 
 
@@ -43,8 +43,9 @@ class WordlistPWFabricator(PasswordFabricator):
             print("A filename attribute is needed when using the `filewriter` method.")
 
         """Calc & write min_len to max_len password combinations"""
+        pm = PathManager()
         password_collection = self.__get_password_combinations(word_lists)
-        with open(os.path.join(paths["OUT_DIR"], self._filename), "w") as file_out:
+        with open(os.path.join(pm.out_root, self._filename), "w") as file_out:
             for password in password_collection:
                 file_out.write(f"{password}\n")
 

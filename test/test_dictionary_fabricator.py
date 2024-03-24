@@ -1,11 +1,12 @@
 import os
 import pathlib
 
-from src.conf.path_manager import paths
+from src.conf.path_manager import PathManager
 from src.passgen.wordlist_fabricator import WordlistPWFabricator
 
 
 def test_wordlist_filewriter():
+    pm = PathManager()
     filename = "test_wordlist_passwords.txt"
     WordlistPWFabricator(filename=filename).use_filewriter(
         (
@@ -14,9 +15,9 @@ def test_wordlist_filewriter():
             ["!", "!1", "*"],
         )
     )
-    assert pathlib.Path(os.path.join(paths["OUT_DIR"], filename)).resolve().is_file()
-    os.remove(os.path.join(paths["OUT_DIR"], filename))
-    assert pathlib.Path(os.path.join(paths["OUT_DIR"], filename)).exists() is False
+    assert pathlib.Path(os.path.join(pm.out_root, filename)).resolve().is_file()
+    os.remove(os.path.join(pm.out_root, filename))
+    assert pathlib.Path(os.path.join(pm.out_root, filename)).exists() is False
 
 
 def test_wordlist_generator():
