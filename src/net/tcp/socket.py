@@ -2,8 +2,7 @@ import pickle
 import socket
 import sys
 
-from src.net.fmt import Formatter
-from src.net.logger import Logger
+from src.net.terminal.fmt import Formatter
 from src.net.protocol.frame import Frame, FrameSequence
 from src.net.protocol.ops import (
     CthulhuEndsSubjectConnection,
@@ -13,9 +12,10 @@ from src.net.protocol.ops import (
     CthulhuTellsSubjectToAttack,
     MakeAnyRepeatNextCommands,
     MakeAnySleepForDuration,
-    SubjectAsksCthulhuForPasswords,
+    SubjectAsksCthulhuForPasswords, AnyInitiateConnection,
 )
 from src.net.util import Utils
+from src.utils.logger import get_logger
 
 
 class TcpSocket:
@@ -24,7 +24,7 @@ class TcpSocket:
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.host = host
         self.port = port
-        self.log = Logger()
+        self.log = get_logger()
         self.fprint = Formatter.fprint
         self.hostname = Formatter.get_localhost_name
         self.peername = Formatter.get_peer_hostname
@@ -39,6 +39,8 @@ class TcpSocket:
             self.s.settimeout(timeout)
             try:
                 self.s.connect((host, port))
+            except BlockingIOError:
+                print("Blocking error FIX") # FIXME
             except ConnectionRefusedError:
                 self.log.error(f"Connection to {self.peername(host)} refused")
                 sys.exit(1)
@@ -166,7 +168,7 @@ class TCPClient(TcpSocket):
 
     PAYLOAD = [
         FrameSequence(
-            Frame(AnyInitiateConnection()),
+            Frame(AnyInitiateConnection(dict())),
         ),
         FrameSequence(
             Frame(MakeAnySleepForDuration(time="3s")),

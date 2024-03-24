@@ -1,6 +1,6 @@
-from operation import ProtocolOperation
 
 from src.net.protocol.directionality import OperationDirectionality
+from src.net.protocol.operation import ProtocolOperation
 
 
 class MakeAnyRepeatNextCommands(ProtocolOperation):

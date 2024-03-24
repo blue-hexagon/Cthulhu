@@ -1,10 +1,11 @@
 import os
 
-from src.conf.global_paths import paths
+from src.conf.path_manager import PathManager
 
 
 def test_paths_resolves() -> None:
-    assert os.path.exists(paths["ROOT_DIR"])
-    assert os.path.exists(paths["SRC_DIR"])
-    assert os.path.exists(paths["TEST_DIR"])
-    assert os.path.exists(paths["OUT_DIR"])
+    pm = PathManager()
+    assert os.path.exists(pm.app_root)
+    assert os.path.exists(pm.out_root)
+    assert os.path.exists(pm.src_root)
+    assert os.path.exists(pm.app_config)

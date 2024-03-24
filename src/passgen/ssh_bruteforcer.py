@@ -5,7 +5,7 @@ import time
 import paramiko
 
 from src.conf.colors import colors
-from src.conf.global_paths import paths
+from src.conf.path_manager import paths
 
 
 class SSHBruteforcer:

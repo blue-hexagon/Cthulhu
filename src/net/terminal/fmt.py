@@ -1,17 +1,26 @@
 import socket
 from datetime import datetime
 
-from colorama import Back, Fore
-from logger import Logger
+from colorama import Back, Fore, init
 
+from src.net.terminal.narrator import Narrator
 from src.net.protocol.frame import Frame, FrameSequence
+
+
+class Controller:
+    is_initialized = False
+
+
+if not Controller.is_initialized:
+    init(convert=True)
+    Controller.is_initialized = True
 
 
 class Formatter:
     @staticmethod
     def fprint(transmitter: str, msg: str | Frame | FrameSequence) -> None:
         info_msg = f'[{datetime.now().strftime("%H:%M:%S")} – {transmitter} -> {Formatter.get_localhost_name()}]: FrameSequence recieved'
-        print(f"{Fore.LIGHTWHITE_EX}{Back.GREEN}{info_msg}".ljust(Logger.width) + f"{Fore.RESET}{Back.RESET}")
+        print(f"{Fore.LIGHTWHITE_EX}{Back.GREEN}{info_msg}".ljust(Narrator.width) + f"{Fore.RESET}{Back.RESET}")
         print(msg)
 
     @staticmethod

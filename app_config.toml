@@ -1,0 +1,4 @@
+[app.logger]
+file = true
+console = false
+level = 10

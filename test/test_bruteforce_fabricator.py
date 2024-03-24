@@ -2,7 +2,7 @@ import itertools
 import os
 import pathlib
 
-from src.conf.global_paths import paths
+from src.conf.path_manager import paths
 from src.passgen.bruteforce_fabricator import BruteforcePWFabricator
 
 

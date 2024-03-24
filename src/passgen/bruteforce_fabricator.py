@@ -3,7 +3,7 @@ import os
 import sys
 from typing import Dict, Generator, List
 
-from src.conf.global_paths import paths
+from src.conf.path_manager import paths
 from src.passgen.abstract_fabricator import PasswordFabricator
 
 
