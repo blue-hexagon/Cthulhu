@@ -4,8 +4,17 @@ console = false
 level = 10
 
 [app.setup]
-token = "5e503fe71035a08ebbe391f0cbbeeeab"
-HOST_IP = "127.0.0.1"
-HOST_PORT = 1060
-REMOTE_IP = "127.0.0.1"
-REMOTE_PORT = 1060
+term_colors = true
+
+[app.server]
+token = "Zb!2ku&eA2I6f&eP$s1lRIwj01mu9LU8"
+server_ip = "127.0.0.1" # Choose any from 127.0.0.0/8
+server_port = 1060
+server_timeout = 4
+
+[app.client]
+token = "Zb!2ku&eA2I6f&eP$s1lRIwj01mu9LU8"
+server_ip = "127.0.0.1" # Replace with external/internal IPv4 address
+server_port = 1060
+nodes = ["127.0.0.1"] # Node IP list
+node_timeout = 8

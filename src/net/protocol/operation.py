@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from src.net.protocol.directionality import OperationDirectionality
+from src.net.terminal.narrator import Narrator
 
 
 class ProtocolOperation(ABC):
@@ -16,6 +17,7 @@ class ProtocolOperation(ABC):
 
     def __init__(self, *args, **kwargs) -> None:
         self.operation_directionality = [OperationDirectionality.Undefined]
+        self.narrator = Narrator()
 
     @abstractmethod
     def transmit(self):

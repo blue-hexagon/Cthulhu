@@ -25,10 +25,15 @@ class TcpSocket:
             self.s.settimeout(timeout)
             self.s.bind((host, port))
             self.s.listen()
+            self.narrator.info(f"Role set to server")
+            self.narrator.info(f"Timeout set to {timeout}")
             self.narrator.info(f"Listening at {self.hostaddr(self.s)}")
         elif client and not server:
+            self.narrator.info(f"Role set to client")
             self.s.settimeout(timeout)
+            self.narrator.info(f"Timeout set to {timeout}")
             try:
+                self.narrator.info(f"Trying to connect to {(host,port)}")
                 self.s.connect((host, port))
             except BlockingIOError:
                 pass

@@ -20,7 +20,10 @@ class Formatter:
 
     @staticmethod
     def get_peer_hostname(foreign_host_addr: str) -> str:
-        return socket.gethostbyaddr(foreign_host_addr)[0]
+        try:
+            return socket.gethostbyaddr(foreign_host_addr)[0]
+        except socket.herror:
+            return "Unknown"
 
     @staticmethod
     def get_localhost_addr(sc: socket.socket) -> str:

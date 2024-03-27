@@ -8,7 +8,7 @@ from src.utils.singleton import Singleton
 
 
 class Narrator(metaclass=Singleton):
-    (width, height) = TermUtils.terminal_size()
+    (width, height) = TermUtils().terminal_size()
 
     def __init__(self, colors: bool = True) -> None:
         # TODO: Check if can be shortened as using a singleton - should be, but test.
@@ -28,7 +28,9 @@ class Narrator(metaclass=Singleton):
 
     @staticmethod
     def get_message(msg: str, log_level_name_abbr: str) -> str:
-        return f'[{datetime.now().strftime("%H:%M:%S")} – [{log_level_name_abbr}] – {socket.gethostname()}]: {msg}'
+        return f'[{datetime.now().strftime("%H:%M:%S")} – [{log_level_name_abbr}] – {socket.gethostname()}]: {msg} '.ljust(
+            Narrator.width, "\u2002"
+        )
 
     @staticmethod
     def debug(msg: str) -> None:

@@ -1,7 +1,16 @@
 # Cthulhu [WIP]
+Cthulhu is a password generator for creating bruteforce tables and wordlists. It also acts as a distributed network p
 
-## About
-Cthulhu is a project im currently developing that utilizes hosts to carry out distributed password cracking.
+## Legal and Ethical Usage Guidelines
+THIS TOOL IS FOR LEGAL PURPOSES ONLY!
+
+Using password-cracking tools like Cthulhu or any distributed task runners without proper authorization is both illegal and unethical. Always obtain explicit permission from the system owner before conducting any security testing or password cracking activities.
+
+Unauthorized access or intrusion attempts into computer systems, networks, or services can lead to severe legal consequences, including criminal charges and civil liabilities. Engaging in unethical hacking practices damages trust in cybersecurity professionals and can harm individuals and organizations.
+
+Adhere to legal and ethical guidelines by obtaining explicit authorization, respecting privacy rights, and using these tools solely for legitimate security testing purposes. Remember, while every effort is made to ensure the accuracy and effectiveness of these tools, the user assumes all risks associated with their use. The tool's creator(s) are not liable for any damages, losses, or legal consequences resulting from the use or misuse of these tools.
+
+Act responsibly and ethically in all cybersecurity endeavors.
 
 ## Status
 ### Finished Features

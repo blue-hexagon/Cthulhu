@@ -1,5 +1,13 @@
+import socket
+
+from _socket import SHUT_RDWR
+
+from src.conf.app_client import AppClient
+from src.conf.app_server import AppServer
 from src.net.protocol.directionality import OperationDirectionality
 from src.net.protocol.operation import ProtocolOperation
+from src.net.protocol.sender_identity import SenderIdentity
+from src.utils.exceptions import BreakException
 
 
 class MakeAnyRepeatNextCommands(ProtocolOperation):
@@ -168,11 +176,26 @@ class NodeTellsCthulhuItIsAlive(ProtocolOperation):
 
 
 class AnyInitiateConnection(ProtocolOperation):
-    def __init__(self, configuration: dict, *args, **kwargs) -> None:
+    def __init__(self, sender_identity: SenderIdentity, token: str, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.operation_directionality = [
             OperationDirectionality.NodeFirst,
         ]
+        self.sender_identity = sender_identity
+        self.recieved_token = token
+
+    def check(self, s: socket.socket, local_token: str) -> None:
+        # @formatter:off
+        if self.sender_identity.matches_identity(SenderIdentity.Server) and local_token == AppServer.parse_toml_config().token:
+            self.narrator.success("Token match - authorization granted")
+        elif self.sender_identity.matches_identity(SenderIdentity.Client) and local_token == AppClient.parse_toml_config().token:
+            self.narrator.success("Token match - authorization granted")
+        else:
+            self.narrator.error("Token mismatch - socket shutdown and close")
+            s.shutdown(SHUT_RDWR)
+            s.close()
+            raise BreakException()
+        # @formatter:on
 
     def transmit(self):
         pass

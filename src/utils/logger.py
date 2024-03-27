@@ -1,6 +1,6 @@
 import logging
 
-from src.conf.logger_config import LoggerConfig, parse_toml_logger_config
+from src.conf.app_logger import LoggerConfig
 from src.utils.singleton import Singleton
 
 
@@ -36,7 +36,7 @@ class Logger(metaclass=Singleton):
             raise ValueError("`level` must be increments of 10 between 0 and 50.")
 
     @classmethod
-    def configure_logger(cls, log_config: LoggerConfig = parse_toml_logger_config()) -> None:
+    def configure_logger(cls, log_config: LoggerConfig = LoggerConfig.parse_toml_config()) -> None:
         logger = logging.getLogger(Logger.LOGGER_NAME)
         logger.setLevel(log_config.level)
         if log_config.file:
