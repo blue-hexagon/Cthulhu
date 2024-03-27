@@ -2,3 +2,10 @@
 file = true
 console = false
 level = 10
+
+[app.setup]
+token = "5e503fe71035a08ebbe391f0cbbeeeab"
+HOST_IP = "127.0.0.1"
+HOST_PORT = 1060
+REMOTE_IP = "127.0.0.1"
+REMOTE_PORT = 1060

@@ -24,7 +24,7 @@ class WebAuthBruteforcer:
         email: Tuple[str | None, str | None] = None,
         password: Tuple[str | None, str | None] = None,
         auth_method: Enum = None,
-    ):
+    ) -> None:
         self.endpoint = endpoint
         self.target_host = target_host
         self.target_port = target_port
@@ -57,7 +57,7 @@ class WebAuthBruteforcer:
                 print("Found Token -> " + data.decode("utf-8"))
                 return
 
-    def simple_form_auth(self):
+    def simple_form_auth(self) -> None:
         conn = http.client.HTTPSConnection(self.target_host)
         if self.username_val:
             payload = f"{self.username_name}={self.username_val}&{self.password_name}={self.password_val}"

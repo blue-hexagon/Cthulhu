@@ -10,6 +10,7 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.11"
 toml = "^0.10.2"
+click = "^8.1.7"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.20.0"
@@ -56,3 +57,4 @@ test = { cmd = "pytest", help = "runs all tests" }
 test-cov = { cmd = "pytest --cov", help = "runs all tests with coverage" }
 test-cov-html = { cmd = "pytest --cov --cov-report html:coverage", help = "runs all tests with coverage and outputs a report found in ./coverage/index.html" }
 loc = { cmd = "poetry run pygount ./src --format=summary --suffix=py", help = "Count LOC for the project" }
+net = { cmd = "poetry run python ./src/net/main.py", help = "Run the net module" }

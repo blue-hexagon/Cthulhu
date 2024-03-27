@@ -5,7 +5,7 @@ from src.conf.path_manager import PathManager
 from src.passgen.wordlist_fabricator import WordlistPWFabricator
 
 
-def test_wordlist_filewriter():
+def test_wordlist_filewriter() -> None:
     pm = PathManager()
     filename = "test_wordlist_passwords.txt"
     WordlistPWFabricator(filename=filename).use_filewriter(
@@ -20,7 +20,7 @@ def test_wordlist_filewriter():
     assert pathlib.Path(os.path.join(pm.out_root, filename)).exists() is False
 
 
-def test_wordlist_generator():
+def test_wordlist_generator() -> None:
     dictionary_map = WordlistPWFabricator().use_generator(
         (
             ["København", "københavn", "Copenhagen", "copenhagen"],

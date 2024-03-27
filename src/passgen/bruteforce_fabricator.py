@@ -7,31 +7,6 @@ from src.conf.path_manager import PathManager
 from src.passgen.abstract_fabricator import PasswordFabricator
 
 
-class CharacterClass:
-    """
-    A collection of character groupings to be used as paramaters to <PasswordPermutator>.
-
-    To make a collection you don't have to instantiate the class, simply reference it's class attributes.
-
-    You can modify them for your own use adding language specific characters (such as ÆØÅæøå) to the ascii groups.
-
-    You can also extend the groups by adding a new one, such as:
-    BASE64=ASCII_LOWERCASE + ASCII_UPPERCASE  + "/+=".
-    """
-
-    WHITESPACE = " \t\n\r\v\f"
-    ASCII_LOWERCASE = "abcdefghijklmnopqrstuvwxyz"
-    ASCII_UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    ASCII_LETTERS = ASCII_LOWERCASE + ASCII_UPPERCASE
-    DIGITS = "0123456789"
-    HEXDIGITS_LOWER = DIGITS + "abcdef"
-    HEXDIGITS_UPPER = DIGITS + "ABCDEF"
-    HEXDIGITS = DIGITS + "abcdef" + "ABCDEF"
-    OCTDIGITS = "01234567"
-    PUNCTUATION = r"""!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"""
-    PRINTABLE = DIGITS + ASCII_LETTERS + PUNCTUATION + WHITESPACE
-
-
 class BruteforcePWFabricator(PasswordFabricator):
     def __init__(self, min_len: int, max_len: int, /, *, filename: str = None, combinatoric_iterator: callable = None) -> None:
         super().__init__()

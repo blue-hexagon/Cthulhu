@@ -38,5 +38,5 @@ class OperationDirectionality(Enum):
     NodeFirst = 14
     NodeAny = 16
 
-    def __str__(self):
+    def __str__(self) -> int:
         return self.value

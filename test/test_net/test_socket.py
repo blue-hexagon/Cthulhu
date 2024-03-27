@@ -1,23 +1,23 @@
-import unittest
 from threading import Thread
-import time
 
-from src.net.tcp.socket import TCPServer, TCPClient
+from src.net.protocol.frame import Frame, FrameSequence
+from src.net.protocol.ops import MakeAnySleepForDuration
+from src.net.tcp.client import TCPClient
+from src.net.tcp.server import TCPServer
 
-HOST = '127.0.0.1'
+HOST = "127.0.0.1"
 PORT = 12345
 MESSAGE = "Hello from client"
 
-class TestSocketCommunication(unittest.TestCase):
+
+class TestSocketCommunication:
 
     @classmethod
-    def setUpClass(cls):
-        cls.server_thread = Thread(target=TCPServer, args=("127.0.0.1", 1060, 8))
-        cls.server_thread.daemon = True
-        cls.server_thread.start()
+    def setup_class(cls) -> None:
+        cls.server_thread = Thread(target=TCPServer, args=("127.0.0.1", 1060, 8), daemon=True).start()
 
-    def test_client_server_communication(self):
-        TCPClient("127.0.0.1", 1060)
-
-if __name__ == '__main__':
-    unittest.main()
+    def test_client_server_communication(self) -> None:
+        payload = FrameSequence(
+            Frame(MakeAnySleepForDuration(time="3s")),
+        )
+        TCPClient("127.0.0.1", 1060, payload, timeout=8)

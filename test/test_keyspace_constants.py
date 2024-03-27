@@ -1,9 +1,9 @@
 import re
 
-from src.passgen.bruteforce_fabricator import CharacterClass
+from src.passgen.char_class import CharacterClass
 
 
-def test_keyspace_constants():
+def test_keyspace_constants() -> None:
     """Tests the character-class constants"""
     assert CharacterClass.WHITESPACE.isspace()
     assert CharacterClass.ASCII_LOWERCASE.islower()

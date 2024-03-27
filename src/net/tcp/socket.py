@@ -2,23 +2,14 @@ import pickle
 import socket
 import sys
 
-from src.net.terminal.fmt import Formatter
-from src.net.protocol.frame import Frame, FrameSequence
-from src.net.protocol.ops import (
-    CthulhuEndsSubjectConnection,
-    CthulhuInstructsSubjectAboutAttackProtocol,
-    CthulhuInstructsSubjectToSleepBetweenAuthAttempts,
-    CthulhuTellsNodeToStopAuthAttack,
-    CthulhuTellsSubjectToAttack,
-    MakeAnyRepeatNextCommands,
-    MakeAnySleepForDuration,
-    SubjectAsksCthulhuForPasswords, AnyInitiateConnection,
-)
+from src.net.protocol.frame import FrameSequence
+from src.net.tcp.shortcuts import Formatter
 from src.net.terminal.narrator import Narrator
-from src.net.util import Utils
 
 
 class TcpSocket:
+    """Base class for TcpServer and TcpClient - don't instantiate, or modify - use the derived classes"""
+
     def __init__(self, host: str, port: int, timeout: int, server: bool, client: bool) -> None:
         """Setup and configure sockets"""
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -40,7 +31,7 @@ class TcpSocket:
             try:
                 self.s.connect((host, port))
             except BlockingIOError:
-                print("Blocking error FIX") # FIXME
+                pass
             except ConnectionRefusedError:
                 self.narrator.error(f"Connection to {self.peername(host)} refused")
                 sys.exit(1)
@@ -84,14 +75,14 @@ class TcpSocket:
         sock.sendall(serialized_data)
 
     @staticmethod
-    def trx(sock: socket.socket, msg: FrameSequence):
+    def trx(sock: socket.socket, msg: FrameSequence) -> str:
         """Transmit then recieve"""
         TcpSocket.send_all(sock, msg)  # Send all
         recv = TcpSocket.recv_all(sock)  # Recieve all
         return recv
 
     @staticmethod
-    def rtx(sock: socket.socket, msg: FrameSequence):
+    def rtx(sock: socket.socket, msg: FrameSequence) -> str:
         """Recieve then transmit"""
         recv = TcpSocket.recv_all(sock)  # Recieve all
         TcpSocket.send_all(sock, msg)  # Send all
@@ -106,90 +97,3 @@ class TcpSocket:
     def _string(msg: bytes) -> str:
         """Convert UTF-8 encoded bytes to a string"""
         return msg.decode("utf-8")
-
-
-class TCPServer(TcpSocket):
-    """Server code goes here"""
-
-    def __init__(self, host: str, port: int, timeout=0) -> None:
-        self.repeat: int = -1
-        self.next_n_commands: int = -1
-        self.pw_cache_limit: int = -1
-        self.fire_attack_delay: int = -1
-        self.stop_attack: bool = False
-        super().__init__(host, port, timeout, server=True, client=False)
-        while True:
-            s: socket.socket = self.accept_incoming_connection()
-            while True:
-                try:
-                    frame_sequence = TcpSocket.recv_all(s)
-                except EOFError:
-                    break
-                self.fprint(self.peername(host), frame_sequence)
-                for frame in frame_sequence.frames:
-                    op = frame.operation
-                    op_type = type(frame.operation)
-                    if op_type is MakeAnyRepeatNextCommands:
-                        self.repeat = op.repeat
-                        self.next_n_commands = op.next_n_commands
-                        self.narrator.debug(f"Repeat {self.repeat} times the next {self.next_n_commands} commands.")
-
-                    elif op_type is SubjectAsksCthulhuForPasswords:
-                        self.pw_cache_limit = op.amount
-                        self.narrator.debug(f"Password cache set to {self.pw_cache_limit}.")
-
-                    elif op_type is CthulhuTellsSubjectToAttack:
-                        self.fire_attack_delay = Utils.get_ms_delay(op.delay)
-                        self.narrator.debug(f"Fire delay set to {op.delay}.")
-
-                    elif op_type is CthulhuTellsNodeToStopAuthAttack:
-                        self.stop_attack_delay = Utils.get_ms_delay(op.delay)
-                        self.narrator.debug(f"Stop delay set to {op.delay}.")
-
-                    elif op_type is MakeAnySleepForDuration:
-                        print("hit")
-
-                    elif op_type is CthulhuInstructsSubjectToSleepBetweenAuthAttempts:
-                        print("hit")
-
-                    elif op_type is CthulhuInstructsSubjectAboutAttackProtocol:
-                        print("hit")
-
-                    elif op_type is CthulhuEndsSubjectConnection:
-                        print("hit")
-
-                    else:
-                        self.narrator.error(f"Protocol operation not recognized. Ignoring: {op}.")
-            s.close()
-
-
-class TCPClient(TcpSocket):
-    """Client code goes here"""
-
-    PAYLOAD = [
-        FrameSequence(
-            Frame(AnyInitiateConnection(dict())),
-        ),
-        FrameSequence(
-            Frame(MakeAnySleepForDuration(time="3s")),
-            Frame(CthulhuInstructsSubjectAboutAttackProtocol(protocol="ssh")),
-            Frame(MakeAnyRepeatNextCommands(repeat="5", next_n_commands="5")),
-            Frame(SubjectAsksCthulhuForPasswords(amount="25-100")),
-            Frame(CthulhuTellsSubjectToAttack(delay="10m")),
-        ),
-        FrameSequence(
-            Frame(MakeAnySleepForDuration(time="3s")),
-        ),
-        FrameSequence(
-            Frame(CthulhuEndsSubjectConnection()),
-        ),
-    ]
-
-    def __init__(self, host: str, port: int, timeout=0) -> None:
-        super().__init__(host, port, timeout, server=False, client=True)
-        packet_stream = TCPClient.PAYLOAD
-        while True:
-            TcpSocket.send_all(self.s, packet_stream)
-            # Formatter.fprint(self.peername(host), self.recv_all(s))
-            break
-        self.s.close()

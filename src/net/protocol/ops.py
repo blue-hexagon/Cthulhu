@@ -1,4 +1,3 @@
-
 from src.net.protocol.directionality import OperationDirectionality
 from src.net.protocol.operation import ProtocolOperation
 
@@ -169,12 +168,14 @@ class NodeTellsCthulhuItIsAlive(ProtocolOperation):
 
 
 class AnyInitiateConnection(ProtocolOperation):
-    """
-    Direction
-    """
-
     def __init__(self, configuration: dict, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.operation_directionality = [
-            OperationDirectionality.CthulhuFirst,
+            OperationDirectionality.NodeFirst,
         ]
+
+    def transmit(self):
+        pass
+
+    def recieve(self):
+        pass

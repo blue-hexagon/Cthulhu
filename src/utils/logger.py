@@ -1,6 +1,6 @@
 import logging
 
-from src.utils.logger_config import LoggerConfig, parse_toml_logger_config
+from src.conf.logger_config import LoggerConfig, parse_toml_logger_config
 from src.utils.singleton import Singleton
 
 
@@ -15,7 +15,7 @@ class Logger(metaclass=Singleton):
     L_ERROR = 40
     L_CRITICAL = 50
 
-    def __init__(self):
+    def __init__(self) -> None:
         Logger.configure_logger()
 
     @classmethod
@@ -33,14 +33,14 @@ class Logger(metaclass=Singleton):
         elif level == 50:
             return cls.L_DEBUG
         else:
-            raise ValueError(f"`level` must be increments of 10 between 0 and 50.")
+            raise ValueError("`level` must be increments of 10 between 0 and 50.")
 
     @classmethod
     def configure_logger(cls, log_config: LoggerConfig = parse_toml_logger_config()) -> None:
         logger = logging.getLogger(Logger.LOGGER_NAME)
         logger.setLevel(log_config.level)
         if log_config.file:
-            if not cls.has_handler(cls.FILE_HANDLER):
+            if not cls.__has_handler(cls.FILE_HANDLER):
                 file_handler = logging.FileHandler(log_config.filename)
                 file_handler.setLevel(log_config.level)
                 file_formatter = logging.Formatter('[%(levelname)s:%(asctime)s] %(message)s')
@@ -48,10 +48,10 @@ class Logger(metaclass=Singleton):
                 file_handler.set_name(cls.FILE_HANDLER)
                 logger.addHandler(file_handler)
             else:
-                handler = cls.get_handler(cls.FILE_HANDLER)
+                handler = cls.__get_handler(cls.FILE_HANDLER)
                 handler.setLevel(log_config.level)
         if log_config.console:
-            if not cls.has_handler(cls.CONSOLE_HANDLER):
+            if not cls.__has_handler(cls.CONSOLE_HANDLER):
                 console_handler = logging.StreamHandler()
                 console_handler.setLevel(log_config.level)
                 console_formatter = logging.Formatter('[%(levelname)s:%(asctime)s] %(message)s')
@@ -59,7 +59,7 @@ class Logger(metaclass=Singleton):
                 console_handler.set_name(cls.CONSOLE_HANDLER)
                 logger.addHandler(console_handler)
             else:
-                handler = cls.get_handler(cls.CONSOLE_HANDLER)
+                handler = cls.__get_handler(cls.CONSOLE_HANDLER)
                 handler.setLevel(log_config.level)
         if False:
             """ Test logger """
@@ -70,7 +70,7 @@ class Logger(metaclass=Singleton):
             get_logger().critical("crit")
 
     @classmethod
-    def has_handler(cls, handler_name: str) -> bool:
+    def __has_handler(cls, handler_name: str) -> bool:
         specific_handler_found = False
         for handler in get_logger().handlers:
             if handler.get_name() == handler_name:
@@ -79,7 +79,7 @@ class Logger(metaclass=Singleton):
         return specific_handler_found
 
     @classmethod
-    def get_handler(cls, handler_name: str) -> logging.Handler | None:
+    def __get_handler(cls, handler_name: str) -> logging.Handler | None:
         specific_handler = None
         for handler in get_logger().handlers:
             if handler.get_name() == handler_name:
@@ -88,7 +88,7 @@ class Logger(metaclass=Singleton):
         return specific_handler
 
     @staticmethod
-    def configure_logger_set_level(level: int):
+    def configure_logger_set_level(level: int) -> None:
         inverse_level = Logger.inverse_level(level)
         get_logger().debug(f"Inverse level: {inverse_level}")
         get_logger().debug(f"Previous logger level was: {inverse_level}")
@@ -99,8 +99,9 @@ class Logger(metaclass=Singleton):
         get_logger().debug(f"New logger level is: {logging.getLogger('dual_logger').getEffectiveLevel()}")
 
 
-def get_logger():
+def get_logger() -> logging.Logger:
     return logging.getLogger(Logger.LOGGER_NAME)
+
 
 if __name__ == '__main__':
     logger = Logger()
