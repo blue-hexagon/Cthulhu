@@ -182,13 +182,15 @@ class AnyInitiateConnection(ProtocolOperation):
             OperationDirectionality.NodeFirst,
         ]
         self.sender_identity = sender_identity
-        self.recieved_token = token
+        self.transmitted_token = (
+            token  # This is the token that was set when the object was instantiated - i.e., the transmitted and then recieved token
+        )
 
-    def check(self, s: socket.socket, local_token: str) -> None:
+    def check_token(self, s: socket.socket) -> None:
         # @formatter:off
-        if self.sender_identity.matches_identity(SenderIdentity.Server) and local_token == AppServer.parse_toml_config().token:
+        if self.sender_identity.matches_identity(SenderIdentity.Server) and self.transmitted_token == AppServer.parse_toml_config().token:
             self.narrator.success("Token match - authorization granted")
-        elif self.sender_identity.matches_identity(SenderIdentity.Client) and local_token == AppClient.parse_toml_config().token:
+        elif self.sender_identity.matches_identity(SenderIdentity.Client) and self.transmitted_token == AppClient.parse_toml_config().token:
             self.narrator.success("Token match - authorization granted")
         else:
             self.narrator.error("Token mismatch - socket shutdown and close")

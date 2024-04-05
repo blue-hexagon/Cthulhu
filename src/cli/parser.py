@@ -11,7 +11,7 @@ from src.passgen.util import generate_password
 
 class Parser:
     def __init__(self, *args) -> None:
-        """Takes an optional args string (not a list!)"""
+        """Takes an optional args string (not a list og strings!)"""
         self.args = args
         self.match_found = False
         self.parser = argparse.ArgumentParser(
@@ -32,7 +32,7 @@ class Parser:
         self.__actor(args.command == "server", self.__handle_server)
         self.__actor(args.command == "token", self.__handle_token)
         if not self.match_found:
-            print(self.parser.print_help())
+            self.parser.print_help()
         self.match_found = False
 
     def __actor(self, command_match: bool, handler: Callable, args=None):

@@ -28,9 +28,9 @@ class Narrator(metaclass=Singleton):
 
     @staticmethod
     def get_message(msg: str, log_level_name_abbr: str) -> str:
-        return f'[{datetime.now().strftime("%H:%M:%S")} – [{log_level_name_abbr}] – {socket.gethostname()}]: {msg} '.ljust(
-            Narrator.width, "\u2002"
-        )
+        prefix = f'[{datetime.now().strftime("%H:%M:%S")} – [{log_level_name_abbr}] – {socket.gethostname()}]:'
+        print_str = f"{prefix} {msg}".ljust(Narrator.width, "\u2002")
+        return print_str
 
     @staticmethod
     def debug(msg: str) -> None:

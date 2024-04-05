@@ -1,3 +1,5 @@
+from time import sleep
+
 from src.conf.app_client import AppClient
 from src.net.protocol.frame import Frame, FrameSequence
 from src.net.protocol.ops import AnyInitiateConnection
@@ -19,7 +21,14 @@ class TCPClient(TcpSocket):
     ) -> None:
         super().__init__(host, port, timeout, server=False, client=True)
         while True:
-            TcpSocket.send_all(self.s, FrameSequence(Frame(AnyInitiateConnection(SenderIdentity.Client, token))))
+            self.send_all(
+                self.s,
+                FrameSequence(
+                    Frame(AnyInitiateConnection(SenderIdentity.Client, token)),
+                    Frame(AnyInitiateConnection(SenderIdentity.Client, "bad-token")),
+                ),
+            )
             # sFormatter.fprint(self.peername(host), self.recv_all(self.s))
+            sleep(2)
             break
         self.s.close()

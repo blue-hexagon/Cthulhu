@@ -10,12 +10,13 @@ from src.net.terminal.narrator import Narrator
 class TcpSocket:
     """Base class for TcpServer and TcpClient - don't instantiate, or modify - use the derived classes"""
 
+    narrator = Narrator()
+
     def __init__(self, host: str, port: int, timeout: int, server: bool, client: bool) -> None:
         """Setup and configure sockets"""
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.host = host
         self.port = port
-        self.narrator = Narrator()
         self.fprint = Formatter.fprint
         self.hostname = Formatter.get_localhost_name
         self.peername = Formatter.get_peer_hostname
@@ -57,8 +58,8 @@ class TcpSocket:
             self.narrator.error("Connection timed out")
             sys.exit(1)
 
-    @staticmethod
-    def recv_all(sock: socket.socket, length: int = 1024 * 1024) -> str:
+    @classmethod
+    def recv_all(cls, sock: socket.socket, length: int = 1024 * 1024) -> str:
         """Recieve the pickled data then unpickle it and return the unpickled data"""
         data = b""  # TODO switch data to be type of bytes array and then join the bytesarray before deserializing (this should be faster)
         while len(data) < length:
@@ -71,11 +72,13 @@ class TcpSocket:
             except EOFError:
                 break
         deserialized_data = pickle.loads(data)
+        cls.narrator.debug(f"Recieved FS: {deserialized_data}")
         return deserialized_data
 
-    @staticmethod
-    def send_all(sock: socket.socket, msg: FrameSequence) -> None:
+    @classmethod
+    def send_all(cls, sock: socket.socket, msg: FrameSequence) -> None:
         """Pickle the FrameSequence then send the pickle"""
+        cls.narrator.debug(f"Sending FS: {msg}")
         serialized_data = pickle.dumps(msg)
         sock.sendall(serialized_data)
 
