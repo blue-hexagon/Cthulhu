@@ -1,0 +1,43 @@
+payload_profiles:
+  - profile:
+      - id: "test"
+      - host_group: 'all'
+      - hosts:
+          - 127.0.0.1
+          - 127.0.0.2
+      - password_generator:
+          - itertools:
+              - cartesian_product: true
+              - permutations: false
+              - combinations: false
+              - combinations_with_replacement: false
+          - generator: true
+          - file: false
+            path: "./hex_upper__4_4.txt"
+          - wordlist_matrix:
+              - [ "København", "københavn", "Copenhagen", "copenhagen" ]
+              - [ "!", "!1", "*", "123", "2600", "2600!", "" ]
+          - bruteforce_table:
+              - settings:
+                  min_length: 4
+                  max_length: 8
+                  character_sets:
+                    - HEXDIGITS_UPPER
+      - distributor:
+          - sliding_window: true # sliding window aka. sw
+            sw_size_initial_bits: 3
+            sw_size_min_bit: 1
+            sw_size_max_bits: 5
+          - scheduler:
+              first_in_first_out: true
+              round_robin: false
+              weighted_round_robin: false
+      - FrameSequence:
+          - Frame:
+              - ProtocolOperation: AnyInitiateConnection
+                args: [ "SenderIdentity.Client", "|get_token|" ]
+              - ProtocolOperation: AnyInitiateConnection
+                args: [ "SenderIdentity.Client", "bad-token-ascmics8932" ]
+          - Frame:
+              - ProtocolOperation: AnyInitiateConnection
+                args: [ "SenderIdentity.Client", "token" ]

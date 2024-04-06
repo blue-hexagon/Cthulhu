@@ -1,3 +1,4 @@
+import socket
 from abc import ABC, abstractmethod
 
 from src.net.protocol.directionality import OperationDirectionality
@@ -31,7 +32,7 @@ class ProtocolOperation(ABC):
         self.server_state = ServerState()
 
     @abstractmethod
-    def transmit(self):
+    def transmit(self, s: socket.socket):
         pass
 
     @abstractmethod

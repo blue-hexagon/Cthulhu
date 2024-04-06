@@ -10,6 +10,19 @@ from src.net.protocol.sender_identity import SenderIdentity
 from src.utils.exceptions import BreakException
 
 
+class OperationProxyFactory:
+    def __new__(cls, subclass_name, *args, **kwargs):
+        subclass = globals()[subclass_name]
+        instance = super().__new__(subclass)
+        if args and kwargs:
+            instance.__init__(*args, **kwargs)  # noqa
+        elif args:
+            instance.__init__(*args)  # noqa
+        elif kwargs:
+            instance.__init__(**kwargs)  # noqa
+        return instance
+
+
 class MakeAnyRepeatNextCommands(ProtocolOperation):
     """
     Direction: Node -> Cthulhu.
@@ -25,6 +38,12 @@ class MakeAnyRepeatNextCommands(ProtocolOperation):
         ]
         self.repeat = repeat
         self.next_n_commands = next_n_commands
+
+    def transmit(self, s: socket.socket):
+        raise NotImplementedError()
+
+    def recieve(self):
+        raise NotImplementedError()
 
 
 class SubjectAsksCthulhuForPasswords(ProtocolOperation):
@@ -42,6 +61,12 @@ class SubjectAsksCthulhuForPasswords(ProtocolOperation):
         ]
         self.amount = amount
 
+    def transmit(self, s: socket.socket):
+        raise NotImplementedError()
+
+    def recieve(self):
+        raise NotImplementedError()
+
 
 class CthulhuTellsSubjectToAttack(ProtocolOperation):
     """
@@ -58,6 +83,12 @@ class CthulhuTellsSubjectToAttack(ProtocolOperation):
         ]
         self.delay = delay
 
+    def transmit(self, s: socket.socket):
+        raise NotImplementedError()
+
+    def recieve(self):
+        raise NotImplementedError()
+
 
 class CthulhuTellsNodeToStopAuthAttack(ProtocolOperation):
     """
@@ -70,6 +101,12 @@ class CthulhuTellsNodeToStopAuthAttack(ProtocolOperation):
         super().__init__(*args, **kwargs)
         self.operation_directionality = [OperationDirectionality.CthulhuFirst]
         self.delay = delay
+
+    def transmit(self, s: socket.socket):
+        raise NotImplementedError()
+
+    def recieve(self):
+        raise NotImplementedError()
 
 
 class MakeAnySleepForDuration(ProtocolOperation):
@@ -84,6 +121,12 @@ class MakeAnySleepForDuration(ProtocolOperation):
         self.operation_directionality = [OperationDirectionality.CthulhuFirst]
         self.time = time
 
+    def transmit(self, s: socket.socket):
+        raise NotImplementedError()
+
+    def recieve(self):
+        raise NotImplementedError()
+
 
 class CthulhuInstructsSubjectToSleepBetweenAuthAttempts(ProtocolOperation):
     """
@@ -97,6 +140,12 @@ class CthulhuInstructsSubjectToSleepBetweenAuthAttempts(ProtocolOperation):
         super().__init__(*args, **kwargs)
         self.operation_directionality = [OperationDirectionality.CthulhuFirst]
         self.time = time
+
+    def transmit(self, s: socket.socket):
+        raise NotImplementedError()
+
+    def recieve(self):
+        raise NotImplementedError()
 
 
 class CthulhuInstructsSubjectAboutAttackProtocol(ProtocolOperation):
@@ -113,6 +162,12 @@ class CthulhuInstructsSubjectAboutAttackProtocol(ProtocolOperation):
         ]
         self.protocol = protocol
 
+    def transmit(self, s: socket.socket):
+        raise NotImplementedError()
+
+    def recieve(self):
+        raise NotImplementedError()
+
 
 class CthulhuEndsSubjectConnection(ProtocolOperation):
     """
@@ -124,6 +179,12 @@ class CthulhuEndsSubjectConnection(ProtocolOperation):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.operation_directionality = [OperationDirectionality.CthulhuFirst]
+
+    def transmit(self, s: socket.socket):
+        raise NotImplementedError()
+
+    def recieve(self):
+        raise NotImplementedError()
 
 
 class SubjectInformsCthulhuAboutCredentials(ProtocolOperation):
@@ -141,6 +202,12 @@ class SubjectInformsCthulhuAboutCredentials(ProtocolOperation):
         ]
         self.username = username
         self.password = password
+
+    def transmit(self, s: socket.socket):
+        raise NotImplementedError()
+
+    def recieve(self):
+        raise NotImplementedError()
 
 
 class AnySendsResponseCode(ProtocolOperation):
@@ -161,6 +228,12 @@ class AnySendsResponseCode(ProtocolOperation):
         self.response_code = response_code
         self.message = message
 
+    def transmit(self, s: socket.socket):
+        raise NotImplementedError()
+
+    def recieve(self):
+        raise NotImplementedError()
+
 
 class NodeTellsCthulhuItIsAlive(ProtocolOperation):
     """
@@ -174,6 +247,12 @@ class NodeTellsCthulhuItIsAlive(ProtocolOperation):
             OperationDirectionality.NodeFirst,
         ]
 
+    def transmit(self, s: socket.socket):
+        raise NotImplementedError()
+
+    def recieve(self):
+        raise NotImplementedError()
+
 
 class AnyInitiateConnection(ProtocolOperation):
     def __init__(self, sender_identity: SenderIdentity, token: str, *args, **kwargs) -> None:
@@ -183,7 +262,8 @@ class AnyInitiateConnection(ProtocolOperation):
         ]
         self.sender_identity = sender_identity
         self.transmitted_token = (
-            token  # This is the token that was set when the object was instantiated - i.e., the transmitted and then recieved token
+            token
+            # This is the token that was set when the object was instantiated - i.e., the transmitted and then recieved token
         )
 
     def check_token(self, s: socket.socket) -> None:
@@ -194,13 +274,20 @@ class AnyInitiateConnection(ProtocolOperation):
             self.narrator.success("Token match - authorization granted")
         else:
             self.narrator.error("Token mismatch - socket shutdown and close")
+            self.transmit(s)
             s.shutdown(SHUT_RDWR)
             s.close()
             raise BreakException()
         # @formatter:on
 
-    def transmit(self):
-        pass
+    def transmit(self, s: socket.socket):
+        self.narrator.error("Cthulhu sends shutdown and throttles connection")
+        s.send(CthulhuEndsSubjectConnection())
 
     def recieve(self):
-        pass
+        raise NotImplementedError()
+
+
+if __name__ == "__main__":
+    op = OperationProxyFactory("AnyInitiateConnection", "dsakmkmdsa", "s")
+    print(vars(op))

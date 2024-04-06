@@ -29,6 +29,5 @@ class TCPClient(TcpSocket):
                 ),
             )
             # sFormatter.fprint(self.peername(host), self.recv_all(self.s))
-            sleep(2)
             break
         self.s.close()

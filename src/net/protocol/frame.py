@@ -30,10 +30,10 @@ class MessageIDHandler:
 
 
 class Frame:
-    def __init__(self, operation: ProtocolOperation) -> None:
+    def __init__(self, *operations: ProtocolOperation) -> None:
         self.message_id_handler = MessageIDHandler()
-        self.operation = operation
         self.message_id = self.get_next_message_id()
+        self.operations: List[ProtocolOperation] = list(operations)
 
     def get_next_message_id(self) -> int:
         return next(self.message_id_handler)
@@ -41,11 +41,11 @@ class Frame:
     def get_id(self) -> int:
         return self.message_id
 
-    def get_operation(self) -> ProtocolOperation:
-        return self.operation
+    def get_operations(self) -> List[ProtocolOperation]:
+        return self.operations
 
     def __repr__(self) -> str:
-        return f"Frame(message_id='{self.get_next_message_id()}', operation={repr(self.operation)}))"
+        return f"Frame(message_id='{self.get_next_message_id()}', operation={repr(self.operations)}))"
 
 
 class FrameSequence:
@@ -63,7 +63,10 @@ class FrameSequence:
 
 if __name__ == "__main__":
     packet_stream = FrameSequence(
-        Frame(MakeAnySleepForDuration(time="3s")),
+        Frame(
+            MakeAnySleepForDuration(time="3s"),
+            MakeAnySleepForDuration(time="3s"),
+        ),
         Frame(CthulhuInstructsSubjectAboutAttackProtocol(protocol="ssh")),
         Frame(MakeAnyRepeatNextCommands(repeat="5", next_n_commands="5")),
         Frame(SubjectAsksCthulhuForPasswords(amount="25-100")),

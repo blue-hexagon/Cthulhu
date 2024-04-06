@@ -20,6 +20,8 @@ nodes = ["127.0.0.1"] # Node IP list
 node_timeout = 100
 
 [app.load_balancer]
-use_scaling = true # Allow/disallow the scaling (following two options affected if enabled)
-scale_up_interval = 1 # When interacting with the LB - if the client made a request to it within the last N seconds, scale up
-scale_down_interval = 2 # When interacting with the LB - if the client made a request to for more than N seconds ago, scale down
+use_scaling = true # Allow/disallow the scaling (all the following options affected if enabled)
+window_start_size_bits = 2 # 1=2, 2=4, 4=8 ... 8=256 and so on
+window_max_size_bits = 8 # Same
+scale_up_interval = 1 # When interacting with the payload  distributor - if the client made a request to it within the last N seconds, scale up
+scale_down_interval = 2 # When interacting with the payload distributor - if the client made a request to for more than N seconds ago, scale down

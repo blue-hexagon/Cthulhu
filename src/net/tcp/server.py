@@ -3,7 +3,7 @@ import socket
 from src.conf.app_server import AppServer
 from src.net.protocol.frame import FrameSequence
 from src.net.protocol.operation import ProtocolOperation
-from src.net.protocol.ops import AnyInitiateConnection
+from src.net.protocol.ops import AnyInitiateConnection, CthulhuEndsSubjectConnection
 from src.net.tcp.socket import TcpSocket
 from src.utils.exceptions import BreakException
 from src.utils.singleton import Singleton
@@ -32,6 +32,7 @@ class TCPServer(TcpSocket):
                         op_type = type(frame.operation)
                         if op_type is AnyInitiateConnection:
                             op.check_token(s)
+                            # op.transmit(s)  # s.send(CthulhuEndsSubjectConnection())
                         else:
                             self.narrator.error(f"Protocol operation not recognized: ignoring.")
                 except (BreakException, EOFError):

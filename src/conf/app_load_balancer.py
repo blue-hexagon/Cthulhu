@@ -12,6 +12,8 @@ class AppLoadBalancer:
     use_scaling: bool
     scale_up_interval: int
     scale_down_interval: int
+    window_start_size_bits: int
+    window_max_size_bits: int
 
     @staticmethod
     def parse_toml_config() -> Any:

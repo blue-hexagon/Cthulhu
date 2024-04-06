@@ -20,6 +20,7 @@ class PathManager(metaclass=Singleton):
 
         # Directories
         self.app_config: pathlib.Path = self.app_root / "app_config.toml"
+        self.payload_profiles: pathlib.Path = self.app_root / "payload_profiles.yml"
 
         """ Ensure certain directories exists """
         # make_dirs = [self.out_root]
