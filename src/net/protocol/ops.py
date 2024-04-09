@@ -11,7 +11,7 @@ from src.utils.exceptions import BreakException
 
 
 class OperationProxyFactory:
-    def __new__(cls, subclass_name, *args, **kwargs):
+    def __new__(cls, subclass_name, args, **kwargs):
         subclass = globals()[subclass_name]
         instance = super().__new__(subclass)
         if args and kwargs:
