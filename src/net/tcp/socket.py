@@ -2,7 +2,7 @@ import pickle
 import socket
 import sys
 
-from src.net.protocol.frame import FrameSequence
+from src.net.protocol.core.frame import FrameSequence
 from src.net.tcp.shortcuts import Formatter
 from src.net.terminal.narrator import Narrator
 

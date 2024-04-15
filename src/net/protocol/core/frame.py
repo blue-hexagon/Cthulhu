@@ -3,7 +3,7 @@ import time
 from pprint import pprint
 from typing import List
 
-from src.net.protocol.operation import ProtocolOperation
+from src.net.protocol.core.operation_abc import ProtocolOperation
 from src.net.protocol.ops import (
     CthulhuInstructsSubjectAboutAttackProtocol,
     CthulhuTellsSubjectToAttack,

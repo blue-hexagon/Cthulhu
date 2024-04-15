@@ -4,9 +4,9 @@ import uuid
 from time import sleep
 
 from src.conf.app_client import AppClient
-from src.net.protocol.frame import Frame, FrameSequence
-from src.net.protocol.ops import AnyInitiateConnection
-from src.net.protocol.sender_identity import SenderIdentity
+from src.net.protocol.core.frame import FrameSequence, Frame
+from src.net.protocol.enums.sender_identity import SenderIdentity
+from src.net.protocol.operations.initiate_connection import AnyInitiateConnection
 from src.net.tcp.socket import TcpSocket
 from src.utils.exceptions import BreakException
 
@@ -34,7 +34,8 @@ class TCPClient(TcpSocket):
                     for proto_op in frame.operations:
                         op_type = type(proto_op)
                         if op_type is AnyInitiateConnection:
-                            proto_op.check_token(self.s)
+                            raise BreakException
+                            # proto_op.execute(self.s)
                         else:
                             self.narrator.error(f"Protocol operation not recognized: ignoring.")
             except (BreakException, EOFError):

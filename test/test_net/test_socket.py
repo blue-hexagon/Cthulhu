@@ -1,6 +1,6 @@
 from threading import Thread
 
-from src.net.protocol.frame import Frame, FrameSequence
+from src.net.protocol.core.frame import FrameSequence, Frame
 from src.net.protocol.ops import MakeAnySleepForDuration
 from src.net.tcp.client import TCPClient
 from src.net.tcp.server import TCPServer

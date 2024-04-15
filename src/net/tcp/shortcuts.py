@@ -3,7 +3,7 @@ from datetime import datetime
 
 from colorama import Back, Fore
 
-from src.net.protocol.frame import Frame, FrameSequence
+from src.net.protocol.core.frame import FrameSequence, Frame
 from src.net.terminal.narrator import Narrator
 
 

@@ -1,9 +1,7 @@
 import random
 from time import sleep
 
-from src.passgen.distributor.client import Client
-from src.passgen.distributor.object_tracker import ObjectTracker
-from src.passgen.distributor.sliding_window_action import SlidingWindowAction
+from src.passgen.distributor.payload_distributor import Client, ObjectTracker, SlidingWindowAction
 
 
 def test_sliding_window_check():
@@ -18,4 +16,4 @@ def test_sliding_window_check():
         if i > increment_threshold:
             sleep(i)
             rand_client = clients[random.randint(0,len(clients)-1)]
-            assert rand_client.tracker.get_sliding_window_action(hash(rand_client)) == SlidingWindowAction.
+            assert rand_client.tracker.get_sliding_window_action(hash(rand_client)) == SlidingWindowAction

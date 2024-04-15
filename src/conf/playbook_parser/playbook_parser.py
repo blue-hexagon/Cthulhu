@@ -1,7 +1,7 @@
 from src.conf.path_manager import PathManager
 from src.conf.playbook_parser.playbook_objects import Frame, Scheduler, Playbook, Profile, Hosts, PasswordGenerator, \
     ItertoolsFunc, Distributor, PasswordSource
-from src.net.protocol.ops import OperationProxyFactory
+from src.net.protocol.operations.proxy_factory import OperationProxyFactory
 
 import yaml
 

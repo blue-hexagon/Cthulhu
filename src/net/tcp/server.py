@@ -1,12 +1,9 @@
-import random
 import socket
-import time
 
 from src.conf.app_server import AppServer
-from src.net.protocol.frame import FrameSequence, Frame
-from src.net.protocol.operation import ProtocolOperation
-from src.net.protocol.ops import AnyInitiateConnection
-from src.net.protocol.sender_identity import SenderIdentity
+from src.net.protocol.core.frame import FrameSequence, Frame
+from src.net.protocol.enums.sender_identity import SenderIdentity
+from src.net.protocol.operations.initiate_connection import AnyInitiateConnection
 from src.net.tcp.socket import TcpSocket
 from src.utils.exceptions import BreakException
 
@@ -31,11 +28,11 @@ class TCPServer(TcpSocket):
                     frame_sequence: FrameSequence = self.rx(s)  # noqa
                     for frame in frame_sequence.frames:
                         for proto_op in frame.operations:
-                            op_type = type(proto_op)
-                            if op_type is AnyInitiateConnection:
-                                proto_op.check_token(s)
+                            (res, status) = proto_op.execute(s)
+                            if res is None:
+                                self.narrator.error(f"{status}")
                             else:
-                                self.narrator.error(f"Protocol operation not recognized: ignoring.")
+                                self.narrator.success(f"{res}")
                     self.tx(s, FrameSequence(Frame(AnyInitiateConnection(SenderIdentity.Server, token))))
                 except (BreakException, EOFError):
                     break

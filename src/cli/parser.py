@@ -1,12 +1,8 @@
 import argparse
-import subprocess
 import threading
 from typing import Callable
 
 from src.net.banner import Banner
-from src.net.protocol.frame import Frame, FrameSequence
-from src.net.protocol.ops import AnyInitiateConnection
-from src.net.tcp.c2 import socksrv
 from src.net.tcp.c2.socksrv import CnC, RatServer
 from src.net.tcp.client import TCPClient
 from src.net.tcp.server import TCPServer

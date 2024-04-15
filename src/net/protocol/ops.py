@@ -1,26 +1,8 @@
 import socket
 
-from _socket import SHUT_RDWR
-
-from src.conf.app_client import AppClient
-from src.conf.app_server import AppServer
-from src.net.protocol.directionality import OperationDirectionality
-from src.net.protocol.operation import ProtocolOperation
-from src.net.protocol.sender_identity import SenderIdentity
-from src.utils.exceptions import BreakException
-
-
-class OperationProxyFactory:
-    def __new__(cls, subclass_name, args, **kwargs):
-        subclass = globals()[subclass_name]
-        instance = super().__new__(subclass)
-        if args and kwargs:
-            instance.__init__(*args, **kwargs)  # noqa
-        elif args:
-            instance.__init__(*args)  # noqa
-        elif kwargs:
-            instance.__init__(**kwargs)  # noqa
-        return instance
+from src.net.protocol.core.operation_abc import ProtocolOperation
+from src.net.protocol.enums.directionality import OperationDirectionality
+from src.net.protocol.operations.proxy_factory import OperationProxyFactory
 
 
 class MakeAnyRepeatNextCommands(ProtocolOperation):
@@ -253,44 +235,6 @@ class NodeTellsCthulhuItIsAlive(ProtocolOperation):
     def recieve(self):
         raise NotImplementedError()
 
-
-class AnyInitiateConnection(ProtocolOperation):
-    def __init__(self, sender_identity: SenderIdentity, token: str, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.operation_directionality = [
-            OperationDirectionality.NodeFirst,
-        ]
-        self.sender_identity = sender_identity
-        self.transmitted_token = (
-            token
-            # This is the token that was set when the object was instantiated - i.e., the transmitted and then recieved token
-            # It's transmitted "over the wire" by pickling the object instance and sending it to a reciever
-        )
-
-
-    def check_token(self, s: socket.socket) -> None:
-        # @formatter:off
-        if self.sender_identity.matches_identity(SenderIdentity.Server) and self.transmitted_token == AppServer.parse_toml_config().token:
-            self.narrator.success("[SenderIdentity.Server] Token match - authorization granted")
-        elif self.sender_identity.matches_identity(SenderIdentity.Client) and self.transmitted_token == AppClient.parse_toml_config().token:
-            self.narrator.success("[SenderIdentity.Client] Token match - authorization granted")
-        else:
-            self.narrator.error("Token mismatch - socket shutdown and close")
-            s.shutdown(SHUT_RDWR)
-            s.close()
-            raise BreakException()
-        # @formatter:on
-
-    def reply(self, s: socket.socket):
-        pass
-    #     self.narrator.error("tries to send reply")
-    #     s.sendall(b"Cthulhu sends shutdown and throttles connection")
-
-    def recieve(self):
-        raise NotImplementedError()
-    @property
-    def has_reply(self):
-        return True
 
 if __name__ == "__main__":
     op = OperationProxyFactory("AnyInitiateConnection", "dsakmkmdsa", "s")
