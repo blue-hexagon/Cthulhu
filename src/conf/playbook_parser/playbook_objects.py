@@ -19,9 +19,16 @@ class ItertoolsFunc:
 
 
 @dataclass
+class PasswordSource:
+    generator: bool
+    file: bool
+    path: str
+
+
+@dataclass
 class PasswordGenerator:
     itertools_func: ItertoolsFunc
-    output: dict
+    password_source: PasswordSource
     wordlist_matrix: List[List[Union[str, List[str]]]]
     bruteforce_table: dict
 
@@ -68,6 +75,3 @@ class Profile:
 @dataclass
 class Playbook:
     profiles: List[Profile]
-
-
-

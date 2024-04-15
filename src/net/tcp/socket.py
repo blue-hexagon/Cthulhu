@@ -34,7 +34,7 @@ class TcpSocket:
             self.s.settimeout(timeout)
             self.narrator.info(f"Timeout set to {timeout}")
             try:
-                self.narrator.info(f"Trying to connect to {(host,port)}")
+                self.narrator.info(f"Trying to connect to {(host, port)}")
                 self.s.connect((host, port))
             except BlockingIOError:
                 pass
@@ -59,43 +59,45 @@ class TcpSocket:
             sys.exit(1)
 
     @classmethod
-    def recv_all(cls, sock: socket.socket, length: int = 1024 * 1024) -> str:
-        """Recieve the pickled data then unpickle it and return the unpickled data"""
-        data = b""  # TODO switch data to be type of bytes array and then join the bytesarray before deserializing (this should be faster)
-        while len(data) < length:
+    def rx(cls, sock: socket.socket, buffer_size: int = 1024 * 8) -> FrameSequence:
+        """Recieve the pickled data then unpickle it and return the unpickled (unserialized) data"""
+        data = bytearray()  # TODO switch data to be type of bytes array and then join the bytesarray before deserializing (this should be faster)
+        while True:
             try:
-                more = sock.recv(length - len(data))
-                if not more:
-                    raise EOFError(f"socket closed at {len(data)} bytes into a {length}-byte message")
-                else:
-                    data += more
+                chunk = sock.recv(buffer_size)
+                data += chunk
+                if len(chunk) < buffer_size:
+                    break
+                if not chunk:
+                    raise EOFError(f"socket closed at {len(data)} bytes into a recieve call.")
             except EOFError:
                 break
-        deserialized_data = pickle.loads(data)
+        deserialized_data: FrameSequence = pickle.loads(data)
         cls.narrator.debug(f"Recieved FS: {deserialized_data}")
         return deserialized_data
 
     @classmethod
-    def send_all(cls, sock: socket.socket, msg: FrameSequence) -> None:
+    def tx(cls, sock: socket.socket, msg: FrameSequence) -> None:
         """Pickle the FrameSequence then send the pickle"""
         cls.narrator.debug(f"Sending FS: {msg}")
         serialized_data = pickle.dumps(msg)
         sock.sendall(serialized_data)
 
     @staticmethod
-    def trx(sock: socket.socket, msg: FrameSequence) -> str:
+    def trx(sock: socket.socket, msg: FrameSequence) -> FrameSequence:
         """Transmit then recieve"""
-        TcpSocket.send_all(sock, msg)  # Send all
-        recv = TcpSocket.recv_all(sock)  # Recieve all
+        TcpSocket.tx(sock, msg)  # Send all
+        recv = TcpSocket.rx(sock)  # Recieve all
         return recv
 
     @staticmethod
-    def rtx(sock: socket.socket, msg: FrameSequence) -> str:
+    def rtx(sock: socket.socket, msg: FrameSequence) -> FrameSequence:
         """Recieve then transmit"""
-        recv = TcpSocket.recv_all(sock)  # Recieve all
-        TcpSocket.send_all(sock, msg)  # Send all
+        recv = TcpSocket.rx(sock)  # Recieve all
+        TcpSocket.tx(sock, msg)  # Send all
         return recv
 
+    #
     @staticmethod
     def _bytes(msg: str) -> bytes:
         """Convert a string to UTF-8 encoded bytes"""

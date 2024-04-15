@@ -1,6 +1,6 @@
 from src.conf.path_manager import PathManager
 from src.conf.playbook_parser.playbook_objects import Frame, Scheduler, Playbook, Profile, Hosts, PasswordGenerator, \
-    ItertoolsFunc, Distributor
+    ItertoolsFunc, Distributor, PasswordSource
 from src.net.protocol.ops import OperationProxyFactory
 
 import yaml
@@ -49,8 +49,13 @@ class PlaybookParser:
                                        combinations=password_data['itertools_func']['combinations'],
                                        combinations_with_replacement=password_data['itertools_func']['combinations_with_replacement'])
         # @formatter:on
+        password_source = PasswordSource(
+            generator=password_data['password_source']['generator'],
+            file=password_data['password_source']['file'],
+            path=password_data['password_source']['path'],
+        )
         return PasswordGenerator(itertools_func=itertools_func,
-                                 output=password_data['output'],
+                                 password_source=password_source,
                                  wordlist_matrix=password_data['wordlist_matrix'],
                                  bruteforce_table=password_data['bruteforce_table'])
 

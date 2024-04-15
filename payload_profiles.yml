@@ -21,14 +21,14 @@ payload_profiles:
           cartesian_product: exactly
           permutations: nay
           combinations: nay
-          combinations_with_replacement: yes
-        output:
-          generator: exactly
+          combinations_with_replacement: nay
+        password_source: # TODO: Change to password_generator.source
+          generator: exactly # TODO: use_generator, use_file
           file: nay
           path: "./hex_upper__4_4.txt"
         wordlist_matrix:
           - [ "", "København", "københavn", "Copenhagen", "copenhagen" ]
-          - [ "!", "!1", "*", "123", "2600", "2600!", "" ] # Adding an empty string makes the entire row act optionally
+          - [ "!", "!1", "*", "123", "2600", "2600!", "" ] # Adding an empty string makes the row optional
         bruteforce_table:
           settings:
             min_length: 4

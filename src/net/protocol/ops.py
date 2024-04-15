@@ -39,7 +39,7 @@ class MakeAnyRepeatNextCommands(ProtocolOperation):
         self.repeat = repeat
         self.next_n_commands = next_n_commands
 
-    def transmit(self, s: socket.socket):
+    def reply(self, s: socket.socket):
         raise NotImplementedError()
 
     def recieve(self):
@@ -61,7 +61,7 @@ class SubjectAsksCthulhuForPasswords(ProtocolOperation):
         ]
         self.amount = amount
 
-    def transmit(self, s: socket.socket):
+    def reply(self, s: socket.socket):
         raise NotImplementedError()
 
     def recieve(self):
@@ -83,7 +83,7 @@ class CthulhuTellsSubjectToAttack(ProtocolOperation):
         ]
         self.delay = delay
 
-    def transmit(self, s: socket.socket):
+    def reply(self, s: socket.socket):
         raise NotImplementedError()
 
     def recieve(self):
@@ -102,7 +102,7 @@ class CthulhuTellsNodeToStopAuthAttack(ProtocolOperation):
         self.operation_directionality = [OperationDirectionality.CthulhuFirst]
         self.delay = delay
 
-    def transmit(self, s: socket.socket):
+    def reply(self, s: socket.socket):
         raise NotImplementedError()
 
     def recieve(self):
@@ -121,7 +121,7 @@ class MakeAnySleepForDuration(ProtocolOperation):
         self.operation_directionality = [OperationDirectionality.CthulhuFirst]
         self.time = time
 
-    def transmit(self, s: socket.socket):
+    def reply(self, s: socket.socket):
         raise NotImplementedError()
 
     def recieve(self):
@@ -141,7 +141,7 @@ class CthulhuInstructsSubjectToSleepBetweenAuthAttempts(ProtocolOperation):
         self.operation_directionality = [OperationDirectionality.CthulhuFirst]
         self.time = time
 
-    def transmit(self, s: socket.socket):
+    def reply(self, s: socket.socket):
         raise NotImplementedError()
 
     def recieve(self):
@@ -162,7 +162,7 @@ class CthulhuInstructsSubjectAboutAttackProtocol(ProtocolOperation):
         ]
         self.protocol = protocol
 
-    def transmit(self, s: socket.socket):
+    def reply(self, s: socket.socket):
         raise NotImplementedError()
 
     def recieve(self):
@@ -180,7 +180,7 @@ class CthulhuEndsSubjectConnection(ProtocolOperation):
         super().__init__(*args, **kwargs)
         self.operation_directionality = [OperationDirectionality.CthulhuFirst]
 
-    def transmit(self, s: socket.socket):
+    def reply(self, s: socket.socket):
         raise NotImplementedError()
 
     def recieve(self):
@@ -203,7 +203,7 @@ class SubjectInformsCthulhuAboutCredentials(ProtocolOperation):
         self.username = username
         self.password = password
 
-    def transmit(self, s: socket.socket):
+    def reply(self, s: socket.socket):
         raise NotImplementedError()
 
     def recieve(self):
@@ -228,7 +228,7 @@ class AnySendsResponseCode(ProtocolOperation):
         self.response_code = response_code
         self.message = message
 
-    def transmit(self, s: socket.socket):
+    def reply(self, s: socket.socket):
         raise NotImplementedError()
 
     def recieve(self):
@@ -247,7 +247,7 @@ class NodeTellsCthulhuItIsAlive(ProtocolOperation):
             OperationDirectionality.NodeFirst,
         ]
 
-    def transmit(self, s: socket.socket):
+    def reply(self, s: socket.socket):
         raise NotImplementedError()
 
     def recieve(self):
@@ -264,29 +264,33 @@ class AnyInitiateConnection(ProtocolOperation):
         self.transmitted_token = (
             token
             # This is the token that was set when the object was instantiated - i.e., the transmitted and then recieved token
+            # It's transmitted "over the wire" by pickling the object instance and sending it to a reciever
         )
+
 
     def check_token(self, s: socket.socket) -> None:
         # @formatter:off
         if self.sender_identity.matches_identity(SenderIdentity.Server) and self.transmitted_token == AppServer.parse_toml_config().token:
-            self.narrator.success("Token match - authorization granted")
+            self.narrator.success("[SenderIdentity.Server] Token match - authorization granted")
         elif self.sender_identity.matches_identity(SenderIdentity.Client) and self.transmitted_token == AppClient.parse_toml_config().token:
-            self.narrator.success("Token match - authorization granted")
+            self.narrator.success("[SenderIdentity.Client] Token match - authorization granted")
         else:
             self.narrator.error("Token mismatch - socket shutdown and close")
-            self.transmit(s)
             s.shutdown(SHUT_RDWR)
             s.close()
             raise BreakException()
         # @formatter:on
 
-    def transmit(self, s: socket.socket):
-        self.narrator.error("Cthulhu sends shutdown and throttles connection")
-        s.send(CthulhuEndsSubjectConnection())
+    def reply(self, s: socket.socket):
+        pass
+    #     self.narrator.error("tries to send reply")
+    #     s.sendall(b"Cthulhu sends shutdown and throttles connection")
 
     def recieve(self):
         raise NotImplementedError()
-
+    @property
+    def has_reply(self):
+        return True
 
 if __name__ == "__main__":
     op = OperationProxyFactory("AnyInitiateConnection", "dsakmkmdsa", "s")

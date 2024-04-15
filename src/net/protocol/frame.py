@@ -53,6 +53,10 @@ class FrameSequence:
         self.message_handler = MessageIDHandler()
         self.frames: List[Frame] = list(frames)
 
+    @property
+    def frames_count(self):
+        return len(self.frames)
+
     def __repr__(self) -> List[str]:
         frames_representation = [(str(frame) + "\n") for frame in self.frames]
         return frames_representation

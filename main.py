@@ -38,6 +38,7 @@ def use_wordlist():
 
 
 if __name__ == "__main__":
+
     if True:
         Parser().interpret()
     else:
