@@ -10,7 +10,7 @@ from src.net.terminal.narrator import Narrator
 class TcpSocket:
     """Base class for TcpServer and TcpClient - don't instantiate, or modify - use the derived classes"""
 
-    narrator = Narrator()
+    narrator = Narrator
 
     def __init__(self, host: str, port: int, timeout: int, server: bool, client: bool) -> None:
         """Setup and configure sockets"""

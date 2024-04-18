@@ -1,16 +1,15 @@
+from dataclasses import dataclass
+from typing import Tuple, Any, Callable, List
+
+
+@dataclass
 class OperationResult:
-    def __init__(self, result):
-        self.result = result
+    narrator: Callable
+    narrative: str
+    status: Tuple[int, str]
+    change: List[Tuple[Callable, Any]] | None
+    result: Any | None
+    reply: List[Tuple[Callable, Any]] | None
 
-    def __str__(self):
-        return self.result
-
-
-class VoidResult(OperationResult):
-    def __init__(self):
-        super().__init__("<EMPTY>")
-
-
-class TrueResult(OperationResult):
-    def __init__(self):
-        super().__init__("<TRUE>")
+    def narrate(self):
+        self.narrator(self.narrative,self.status[0])

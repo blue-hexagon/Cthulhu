@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Tuple, Callable, Any
 
-from src.net.protocol.enums.codes import PentestStatus, PentestError
+from src.net.protocol.core.operation_result import OperationResult
+from src.net.protocol.enums.codes import StatusCode
 from src.net.protocol.enums.directionality import OperationDirectionality
 from src.net.protocol.exceptions import ProtocolException
 from src.net.protocol.state.server_state import ServerState
@@ -19,22 +22,20 @@ class ProtocolOperation(ABC):
     """
 
     def __init__(self, *args, **kwargs) -> None:
-        self.operation_directionality = [OperationDirectionality.Undefined]
-        self.narrator = Narrator()
-        self.server_state = ServerState()
-        self.replies: bool
-        self.success_code: PentestStatus | None = None
-        self.error_code: PentestError | None = None
-
-    def execute(self, *args, **kwargs):
-        try:
-            result = self._perform_operation(*args, **kwargs)
-            return result, self.success_code
-        except ProtocolException:
-            return None, self.error_code
+        pass
+        # self.operation_directionality = [OperationDirectionality.Undefined]
+        self.narrator = Narrator
+        # self.server_state = ServerState()
+        # self.replies: bool
+        # self.request_status: StatusCode
 
     @abstractmethod
-    def _perform_operation(self, *args, **kwargs):
+    def _perform_operation(self, *args, **kwargs) -> OperationResult:
         pass
 
-
+    def execute(self, *args, **kwargs) -> OperationResult | Tuple[None, StatusCode.code]:
+        try:
+            operation_result = self._perform_operation(*args, **kwargs)
+            return operation_result
+        except ProtocolException:
+            return None, StatusCode.INTERNAL_SERVER_ERROR
